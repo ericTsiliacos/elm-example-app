@@ -1,6 +1,6 @@
 module Tests exposing (..)
 
-import App exposing (Msg(Decrement, Increment), init, update)
+import Counter exposing (Msg(Decrement, Increment), init, update)
 import Test exposing (..)
 import Expect
 import String

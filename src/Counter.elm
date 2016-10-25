@@ -1,4 +1,4 @@
-module App exposing (..)
+module Counter exposing (..)
 
 import Html exposing (Html, button, div, span, text)
 import Html.Events exposing (onClick)
