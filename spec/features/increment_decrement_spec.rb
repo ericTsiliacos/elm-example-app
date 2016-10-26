@@ -9,7 +9,7 @@ describe 'Counter' do
   it 'increments a counter' do
     visit '/'
 
-    click_button "Increment"
+    click_button 'Increment'
 
     expect(page).to have_text('1')
   end
@@ -17,11 +17,11 @@ describe 'Counter' do
   it 'decrements a counter' do
     visit '/'
 
-    click_button "Increment"
-    click_button "Increment"
-    click_button "Increment"
+    click_button 'Increment'
+    click_button 'Increment'
+    click_button 'Increment'
 
-    click_button "Decrement"
+    click_button 'Decrement'
 
     expect(page).to have_text('2')
   end
