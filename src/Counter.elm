@@ -1,24 +1,63 @@
 module Counter exposing (..)
 
-import Html exposing (Html, button, div, input, label, p, span, text)
+import Html exposing (Html, button, div, input, label, li, p, span, text, ul)
 import Html.Attributes exposing (checked, style, type')
 import Html.Events exposing (onCheck, onClick, onInput)
+import Http exposing (Error, get)
+import Json.Decode exposing (Decoder, at, int, list, object2, string, (:=))
 import String exposing (reverse)
+import Platform exposing (Task)
+import Task
 
 
 type alias Model =
     { count : Int
     , text : String
     , showText : Bool
+    , people : People
     }
 
 
-init : Model
-init =
+initialModel : Model
+initialModel =
     { count = 0
     , text = ""
     , showText = True
+    , people = []
     }
+
+
+init : ( Model, Cmd Msg )
+init =
+    initialModel ! [ getPeople ]
+
+
+getPeople : Cmd Msg
+getPeople =
+    get peopleDecoder "http://localhost:8888/people"
+        |> Task.perform GetPeopleFailure GetPeopleSuccess
+
+
+type alias People =
+    List Person
+
+
+type alias Person =
+    { id : Int
+    , name : String
+    }
+
+
+peopleDecoder : Decoder People
+peopleDecoder =
+    at [ "data" ] (list personDecoder)
+
+
+personDecoder : Decoder Person
+personDecoder =
+    object2 Person
+        ("id" := int)
+        ("name" := string)
 
 
 type Msg
@@ -26,27 +65,35 @@ type Msg
     | Decrement
     | TextChange String
     | ToggleCheckBox Bool
+    | GetPeopleFailure Error
+    | GetPeopleSuccess People
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Increment ->
-            { model | count = model.count + 1 }
+            { model | count = model.count + 1 } ! []
 
         Decrement ->
             case model.count of
                 0 ->
-                    model
+                    model ! []
 
                 _ ->
-                    { model | count = model.count - 1 }
+                    { model | count = model.count - 1 } ! []
 
         TextChange value ->
-            { model | text = reverse value }
+            { model | text = reverse value } ! []
 
         ToggleCheckBox checked ->
-            { model | showText = checked }
+            { model | showText = checked } ! []
+
+        GetPeopleSuccess people ->
+            { model | people = people } ! []
+
+        GetPeopleFailure _ ->
+            model ! []
 
 
 view : Model -> Html Msg
@@ -71,6 +118,7 @@ view model =
             [ p [] [ text <| "Text: " ++ model.text ]
             , input [ onInput TextChange ] []
             ]
+        , div [] [ ul [] (List.map (\person -> li [] [ text person.name ]) model.people) ]
         ]
 
 

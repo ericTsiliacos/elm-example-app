@@ -1,0 +1,6 @@
+{
+  "people":
+    { "data":
+        [{ "id": 1, "bad": "batman" }]
+    }
+}

@@ -1,13 +1,14 @@
 module Main exposing (..)
 
 import Counter exposing (init, update, view)
-import Html.App exposing (beginnerProgram)
+import Html.App exposing (program)
 
 
 main : Program Never
 main =
-    beginnerProgram
-        { model = init
+    program
+        { init = init
         , update = update
+        , subscriptions = always Sub.none
         , view = view
         }
