@@ -5,6 +5,7 @@ import Html.Attributes exposing (checked, style, type')
 import Html.Events exposing (onCheck, onClick, onInput)
 import Http exposing (Error, get)
 import Json.Decode exposing (Decoder, at, int, list, object2, string, (:=))
+import Json.Decode.Pipeline exposing (decode, required)
 import String exposing (reverse)
 import Platform exposing (Task)
 import Task
@@ -55,9 +56,9 @@ peopleDecoder =
 
 personDecoder : Decoder Person
 personDecoder =
-    object2 Person
-        ("id" := int)
-        ("name" := string)
+    decode Person
+        |> required "id" int
+        |> required "name" string
 
 
 type Msg
