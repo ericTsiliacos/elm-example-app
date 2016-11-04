@@ -1,4 +1,4 @@
-module Counter exposing (..)
+module App exposing (..)
 
 import Html exposing (Attribute, Html, button, div, input, label, li, p, span, text, ul)
 import Html.Attributes exposing (checked, style, type')

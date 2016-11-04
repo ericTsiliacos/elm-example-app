@@ -1,6 +1,6 @@
 module Main exposing (..)
 
-import Counter exposing (init, update, view)
+import App exposing (init, update, view)
 import Html.App exposing (program)
 
 

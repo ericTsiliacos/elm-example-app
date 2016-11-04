@@ -1,6 +1,6 @@
 module Tests exposing (..)
 
-import Counter exposing (Msg(Decrement, GetPeopleFailure, GetPeopleSuccess, Increment, TextChange, ToggleCheckBox), Person, init, initialModel, peopleDecoder, update)
+import App exposing (Msg(Decrement, GetPeopleFailure, GetPeopleSuccess, Increment, TextChange, ToggleCheckBox), Person, init, initialModel, peopleDecoder, update)
 import Http exposing (Error(Timeout))
 import Json.Decode
 import Test exposing (..)
