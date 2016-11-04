@@ -1,6 +1,6 @@
 module Counter exposing (..)
 
-import Html exposing (Html, button, div, input, label, li, p, span, text, ul)
+import Html exposing (Attribute, Html, button, div, input, label, li, p, span, text, ul)
 import Html.Attributes exposing (checked, style, type')
 import Html.Events exposing (onCheck, onClick, onInput)
 import Http exposing (Error, get)
@@ -99,7 +99,7 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div [ style [ ( "background-color", "rgb(88, 211, 216)" ) ] ]
+    div [ containerStyle ]
         [ div []
             [ p [] [ text ("Count: " ++ toString model.count) ]
             , button [ onClick Increment ]
@@ -132,3 +132,8 @@ visibility predicate =
         ( "display", "block" )
     else
         ( "display", "none" )
+
+
+containerStyle : Attribute Msg
+containerStyle =
+    style [ ( "background-color", "rgb(88, 211, 216)" ), ( "padding", "1rem" ) ]
