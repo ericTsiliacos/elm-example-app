@@ -1,10 +1,12 @@
 module Tests exposing (..)
 
-import App exposing (Msg(Decrement, GetPeopleFailure, GetPeopleSuccess, Increment, TextChange, ToggleCheckBox), Person, init, initialModel, peopleDecoder, update)
+import App exposing (Msg(Decrement, GetPeopleFailure, GetPeopleSuccess, Increment, TextChange, ToggleCheckBox), Person, encodeModel, init, initialModel, peopleDecoder, update)
 import Http exposing (Error(Timeout))
 import Json.Decode
+import Json.Encode
+import List exposing (head)
 import Test exposing (..)
-import Expect
+import Expect exposing (fail)
 import String
 
 
@@ -47,11 +49,11 @@ all =
         , test "decoding people" <|
             \() ->
                 let
-                    peopleJSON =
+                    peopleJSONString =
                         "{\"data\":[{\"id\":1,\"name\":\"batman\"}]}"
 
                     peopleResult =
-                        Json.Decode.decodeString peopleDecoder peopleJSON
+                        Json.Decode.decodeString peopleDecoder peopleJSONString
 
                     people =
                         case peopleResult of
@@ -62,4 +64,14 @@ all =
                                 []
                 in
                     Expect.equal people [ { id = 1, name = "batman" } ]
+        , test "encoding a model to save to localstorage (excluding people)" <|
+            \() ->
+                let
+                    expectedJSONString =
+                        "{\"count\":0,\"text\":\"\",\"showText\":true}"
+
+                    actualJSONString =
+                        encodeModel initialModel
+                in
+                    Expect.equal actualJSONString expectedJSONString
         ]

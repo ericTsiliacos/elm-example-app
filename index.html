@@ -1,0 +1,10 @@
+<div id="App"></div>
+<script src="index.js"></script>
+<script>
+    var app = Elm.Main.fullscreen();
+
+    app.ports.saveStateToLocalStorage.subscribe(function(state) {
+        localStorage.setItem('appState', state)
+    });
+
+</script>
