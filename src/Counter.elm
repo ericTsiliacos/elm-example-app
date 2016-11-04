@@ -119,7 +119,10 @@ view model =
             [ p [] [ text <| "Text: " ++ model.text ]
             , input [ onInput TextChange ] []
             ]
-        , div [] [ ul [] (List.map (\person -> li [] [ text person.name ]) model.people) ]
+        , div []
+            [ p [] [ text "Http Request: " ]
+            , ul [] (List.map (\person -> li [] [ text person.name ]) model.people)
+            ]
         ]
 
 
