@@ -1,7 +1,7 @@
 port module App exposing (..)
 
 import Html exposing (Attribute, Html, button, div, input, label, li, p, span, text, ul)
-import Html.Attributes exposing (checked, style, type')
+import Html.Attributes exposing (checked, style, type', value)
 import Html.Events exposing (onCheck, onClick, onInput)
 import Http exposing (Error, get)
 import Json.Decode exposing (Decoder, at, bool, int, list, object2, string)
@@ -107,6 +107,7 @@ type Msg
     | GetPeopleFailure Error
     | GetPeopleSuccess People
     | LoadLocalStorageAppState String
+    | Reset
 
 
 port saveStateToLocalStorage : String -> Cmd msg
@@ -115,6 +116,14 @@ port saveStateToLocalStorage : String -> Cmd msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        Reset ->
+            storeAndReturn
+                { model
+                    | text = initialModel.text
+                    , count = initialModel.count
+                    , showText = initialModel.showText
+                }
+
         Increment ->
             storeAndReturn { model | count = model.count + 1 }
 
@@ -166,7 +175,8 @@ storeAndReturn model =
 view : Model -> Html Msg
 view model =
     div [ containerStyle ]
-        [ div []
+        [ button [ onClick Reset ] [ text "Reset" ]
+        , div []
             [ p [] [ text ("Count: " ++ toString model.count) ]
             , button [ onClick Increment ]
                 [ text "+" ]
@@ -175,7 +185,12 @@ view model =
             ]
         , p []
             [ label [] [ text "Toggle Showing Text Output" ]
-            , input [ type' "checkbox", checked model.showText, onCheck ToggleCheckBox ] []
+            , input
+                [ type' "checkbox"
+                , checked model.showText
+                , onCheck ToggleCheckBox
+                ]
+                []
             ]
         , div
             [ style
@@ -183,7 +198,11 @@ view model =
                 ]
             ]
             [ p [] [ text <| "Text: " ++ model.text ]
-            , input [ onInput TextChange ] []
+            , input
+                [ onInput TextChange
+                , value model.text
+                ]
+                []
             ]
         , div []
             [ p [] [ text "Http Request: " ]

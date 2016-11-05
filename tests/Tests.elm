@@ -1,6 +1,6 @@
 module Tests exposing (..)
 
-import App exposing (Msg(Decrement, GetPeopleFailure, GetPeopleSuccess, Increment, LoadLocalStorageAppState, TextChange, ToggleCheckBox), Person, appStateDecoder, encodeModel, init, initialModel, peopleDecoder, update)
+import App exposing (Msg(Decrement, GetPeopleFailure, GetPeopleSuccess, Increment, LoadLocalStorageAppState, Reset, TextChange, ToggleCheckBox), Person, appStateDecoder, encodeModel, init, initialModel, peopleDecoder, update)
 import Http exposing (Error(Timeout))
 import Json.Decode
 import Json.Encode
@@ -19,6 +19,19 @@ all =
         , test "Increment" <|
             \() ->
                 Expect.equal (fst (update Increment initialModel)).count 1
+        , test "Reset" <|
+            \() ->
+                let
+                    people =
+                        [ { id = 1, name = "batman" } ]
+
+                    currentModel =
+                        { initialModel | text = "boo", showText = False, count = 1, people = people }
+
+                    updatedModel =
+                        fst (update Reset currentModel)
+                in
+                    Expect.equal updatedModel { initialModel | people = people }
         , describe "Decrement"
             [ test "by 1" <|
                 \() ->
