@@ -1,6 +1,6 @@
 module Tests exposing (..)
 
-import App exposing (Msg(Decrement, GetPeopleFailure, GetPeopleSuccess, Increment, TextChange, ToggleCheckBox), Person, encodeModel, init, initialModel, peopleDecoder, update)
+import App exposing (Msg(Decrement, GetPeopleFailure, GetPeopleSuccess, Increment, LoadLocalStorageAppState, TextChange, ToggleCheckBox), Person, appStateDecoder, encodeModel, init, initialModel, peopleDecoder, update)
 import Http exposing (Error(Timeout))
 import Json.Decode
 import Json.Encode
@@ -12,7 +12,7 @@ import String
 
 all : Test
 all =
-    describe "App Update"
+    describe "App"
         [ test "initial count is set to 0" <|
             \() ->
                 Expect.equal initialModel.count 0
@@ -74,4 +74,39 @@ all =
                         encodeModel initialModel
                 in
                     Expect.equal actualJSONString expectedJSONString
+        , test "decoding the appState" <|
+            \() ->
+                let
+                    appStateJSONString =
+                        "{\"count\":0,\"text\":\"\",\"showText\":true}"
+
+                    appStateResult =
+                        Json.Decode.decodeString appStateDecoder appStateJSONString
+                in
+                    case appStateResult of
+                        Ok appState ->
+                            Expect.equal appState { count = 0, text = "", showText = True }
+
+                        Err err ->
+                            Expect.fail err
+        , describe "LoadLocalStorageAppState"
+            [ test "when the data is decodable, it updates the model with the saved appState" <|
+                \() ->
+                    let
+                        appStateJSONString =
+                            "{\"count\":1,\"text\":\"namtab\",\"showText\":false}"
+                    in
+                        Expect.equal
+                            (fst (update (LoadLocalStorageAppState appStateJSONString) initialModel))
+                            { count = 1, text = "namtab", showText = False, people = [] }
+            , test "when the data is un-decodable, it returns the same model" <|
+                \() ->
+                    let
+                        appStateJSONString =
+                            ""
+                    in
+                        Expect.equal
+                            (fst (update (LoadLocalStorageAppState appStateJSONString) initialModel))
+                            initialModel
+            ]
         ]

@@ -1,6 +1,6 @@
 module Main exposing (..)
 
-import App exposing (init, update, view)
+import App exposing (init, subscriptions, update, view)
 import Html.App exposing (program)
 
 
@@ -9,6 +9,6 @@ main =
     program
         { init = init
         , update = update
-        , subscriptions = always Sub.none
+        , subscriptions = subscriptions
         , view = view
         }

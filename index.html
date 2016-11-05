@@ -7,4 +7,6 @@
         localStorage.setItem('appState', state)
     });
 
+    app.ports.readStateFromLocalStorage.send(localStorage.getItem('appState') || "");
+
 </script>

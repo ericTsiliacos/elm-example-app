@@ -4,9 +4,9 @@ import Html exposing (Attribute, Html, button, div, input, label, li, p, span, t
 import Html.Attributes exposing (checked, style, type')
 import Html.Events exposing (onCheck, onClick, onInput)
 import Http exposing (Error, get)
-import Json.Decode exposing (Decoder, at, int, list, object2, string, (:=))
+import Json.Decode exposing (Decoder, at, bool, int, list, object2, string)
 import Json.Decode.Pipeline exposing (decode, required)
-import Json.Encode exposing (Value, bool, encode, object)
+import Json.Encode exposing (Value, encode, object)
 import String exposing (reverse)
 import Platform exposing (Task)
 import Task
@@ -17,6 +17,13 @@ type alias Model =
     , text : String
     , showText : Bool
     , people : People
+    }
+
+
+type alias AppState =
+    { count : Int
+    , text : String
+    , showText : Bool
     }
 
 
@@ -44,6 +51,14 @@ encodeModel model =
     encode 0 (modelToValue model)
 
 
+appStateDecoder : Decoder AppState
+appStateDecoder =
+    decode AppState
+        |> required "count" int
+        |> required "text" string
+        |> required "showText" bool
+
+
 initialModel : Model
 initialModel =
     { count = 0
@@ -51,6 +66,14 @@ initialModel =
     , showText = True
     , people = []
     }
+
+
+port readStateFromLocalStorage : (String -> msg) -> Sub msg
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    readStateFromLocalStorage LoadLocalStorageAppState
 
 
 init : ( Model, Cmd Msg )
@@ -83,6 +106,7 @@ type Msg
     | ToggleCheckBox Bool
     | GetPeopleFailure Error
     | GetPeopleSuccess People
+    | LoadLocalStorageAppState String
 
 
 port saveStateToLocalStorage : String -> Cmd msg
@@ -114,6 +138,23 @@ update msg model =
         GetPeopleFailure _ ->
             model ! []
 
+        LoadLocalStorageAppState appStateJSONString ->
+            let
+                appStateResult =
+                    Json.Decode.decodeString appStateDecoder appStateJSONString
+            in
+                case appStateResult of
+                    Ok appState ->
+                        { model
+                            | text = appState.text
+                            , count = appState.count
+                            , showText = appState.showText
+                        }
+                            ! []
+
+                    Err _ ->
+                        model ! []
+
 
 storeAndReturn : Model -> ( Model, Cmd Msg )
 storeAndReturn model =
@@ -134,7 +175,7 @@ view model =
             ]
         , p []
             [ label [] [ text "Toggle Showing Text Output" ]
-            , input [ type' "checkbox", checked True, onCheck ToggleCheckBox ] []
+            , input [ type' "checkbox", checked model.showText, onCheck ToggleCheckBox ] []
             ]
         , div
             [ style

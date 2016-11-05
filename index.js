@@ -8828,6 +8828,7 @@ var _user$project$App$encodeModel = function (model) {
 		0,
 		_user$project$App$modelToValue(model));
 };
+var _user$project$App$readStateFromLocalStorage = _elm_lang$core$Native_Platform.incomingPort('readStateFromLocalStorage', _elm_lang$core$Json_Decode$string);
 var _user$project$App$saveStateToLocalStorage = _elm_lang$core$Native_Platform.outgoingPort(
 	'saveStateToLocalStorage',
 	function (v) {
@@ -8843,6 +8844,27 @@ var _user$project$App$storeAndReturn = function (model) {
 				_user$project$App$encodeModel(model))
 			]));
 };
+var _user$project$App$Model = F4(
+	function (a, b, c, d) {
+		return {count: a, text: b, showText: c, people: d};
+	});
+var _user$project$App$AppState = F3(
+	function (a, b, c) {
+		return {count: a, text: b, showText: c};
+	});
+var _user$project$App$appStateDecoder = A3(
+	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+	'showText',
+	_elm_lang$core$Json_Decode$bool,
+	A3(
+		_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+		'text',
+		_elm_lang$core$Json_Decode$string,
+		A3(
+			_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+			'count',
+			_elm_lang$core$Json_Decode$int,
+			_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$App$AppState))));
 var _user$project$App$update = F2(
 	function (msg, model) {
 		var _p0 = msg;
@@ -8882,17 +8904,32 @@ var _user$project$App$update = F2(
 						{people: _p0._0}),
 					_elm_lang$core$Native_List.fromArray(
 						[]));
-			default:
+			case 'GetPeopleFailure':
 				return A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
 					model,
 					_elm_lang$core$Native_List.fromArray(
 						[]));
+			default:
+				var appStateResult = A2(_elm_lang$core$Json_Decode$decodeString, _user$project$App$appStateDecoder, _p0._0);
+				var _p2 = appStateResult;
+				if (_p2.ctor === 'Ok') {
+					var _p3 = _p2._0;
+					return A2(
+						_elm_lang$core$Platform_Cmd_ops['!'],
+						_elm_lang$core$Native_Utils.update(
+							model,
+							{text: _p3.text, count: _p3.count, showText: _p3.showText}),
+						_elm_lang$core$Native_List.fromArray(
+							[]));
+				} else {
+					return A2(
+						_elm_lang$core$Platform_Cmd_ops['!'],
+						model,
+						_elm_lang$core$Native_List.fromArray(
+							[]));
+				}
 		}
-	});
-var _user$project$App$Model = F4(
-	function (a, b, c, d) {
-		return {count: a, text: b, showText: c, people: d};
 	});
 var _user$project$App$Person = F2(
 	function (a, b) {
@@ -8912,6 +8949,12 @@ var _user$project$App$peopleDecoder = A2(
 	_elm_lang$core$Native_List.fromArray(
 		['data']),
 	_elm_lang$core$Json_Decode$list(_user$project$App$personDecoder));
+var _user$project$App$LoadLocalStorageAppState = function (a) {
+	return {ctor: 'LoadLocalStorageAppState', _0: a};
+};
+var _user$project$App$subscriptions = function (model) {
+	return _user$project$App$readStateFromLocalStorage(_user$project$App$LoadLocalStorageAppState);
+};
 var _user$project$App$GetPeopleSuccess = function (a) {
 	return {ctor: 'GetPeopleSuccess', _0: a};
 };
@@ -9001,7 +9044,7 @@ var _user$project$App$view = function (model) {
 						_elm_lang$core$Native_List.fromArray(
 							[
 								_elm_lang$html$Html_Attributes$type$('checkbox'),
-								_elm_lang$html$Html_Attributes$checked(true),
+								_elm_lang$html$Html_Attributes$checked(model.showText),
 								_elm_lang$html$Html_Events$onCheck(_user$project$App$ToggleCheckBox)
 							]),
 						_elm_lang$core$Native_List.fromArray(
@@ -9074,12 +9117,7 @@ var _user$project$App$view = function (model) {
 
 var _user$project$Main$main = {
 	main: _elm_lang$html$Html_App$program(
-		{
-			init: _user$project$App$init,
-			update: _user$project$App$update,
-			subscriptions: _elm_lang$core$Basics$always(_elm_lang$core$Platform_Sub$none),
-			view: _user$project$App$view
-		})
+		{init: _user$project$App$init, update: _user$project$App$update, subscriptions: _user$project$App$subscriptions, view: _user$project$App$view})
 };
 
 var Elm = {};
