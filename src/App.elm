@@ -17,6 +17,17 @@ type alias Model =
     , text : String
     , showText : Bool
     , people : People
+    , getPeopleErrorMsg : Maybe String
+    }
+
+
+initialModel : Model
+initialModel =
+    { count = 0
+    , text = ""
+    , showText = True
+    , people = []
+    , getPeopleErrorMsg = Nothing
     }
 
 
@@ -63,15 +74,6 @@ appStateDecoder =
         |> required "count" int
         |> required "text" string
         |> required "showText" bool
-
-
-initialModel : Model
-initialModel =
-    { count = 0
-    , text = ""
-    , showText = True
-    , people = []
-    }
 
 
 init : Flags -> ( Model, Cmd Msg )
@@ -150,8 +152,8 @@ update msg model =
         GetPeople (Ok people) ->
             { model | people = people } ! []
 
-        GetPeople (Err _) ->
-            model ! []
+        GetPeople (Err err) ->
+            { model | getPeopleErrorMsg = Just <| toString err } ! []
 
         LoadLocalStorageAppState appStateJSONString ->
             let
@@ -211,7 +213,12 @@ view model =
                 []
             ]
         , div []
-            [ p [] [ text "Http Request: " ]
+            [ p []
+                [ text
+                    ("GET /people: "
+                        ++ (Maybe.withDefault "" model.getPeopleErrorMsg)
+                    )
+                ]
             , ul [] (List.map (\person -> li [] [ text person.name ]) model.people)
             ]
         ]

@@ -103,7 +103,7 @@ all =
                         updatedModel =
                             update_ (GetPeople (Err Timeout)) initialModel
                     in
-                        updatedModel |> To.equal initialModel
+                        updatedModel.getPeopleErrorMsg |> To.equal (Just "Timeout")
             ]
         , test "decoding people" <|
             \() ->
@@ -160,7 +160,7 @@ all =
                     in
                         updatedModel
                             |> To.equal
-                                { count = 1, text = "namtab", showText = False, people = [] }
+                                { initialModel | count = 1, text = "namtab", showText = False, people = [] }
             , test "when the data is un-decodable, it returns the same model" <|
                 \() ->
                     let
