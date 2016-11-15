@@ -1,10 +1,10 @@
 module Main exposing (..)
 
-import App exposing (init, update, view, AppState)
+import App exposing (init, update, view, AppState, Flags)
 import Html exposing (programWithFlags)
 
 
-main : Program (Maybe AppState) App.Model App.Msg
+main : Program Flags App.Model App.Msg
 main =
     programWithFlags
         { init = init

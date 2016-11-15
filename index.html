@@ -2,8 +2,11 @@
 <script src="index.js"></script>
 <script>
     const appState = localStorage.getItem('appState');
-    const startingState = appState ? JSON.parse(appState) : "";
-    const app = Elm.Main.fullscreen(startingState);
+    const startingState = appState ? JSON.parse(appState) : null;
+    const app = Elm.Main.fullscreen({
+        appState: startingState
+      , apiEndpoint: "http://localhost:8888/people"
+    });
 
     app.ports.saveStateToLocalStorage.subscribe(function(state) {
         localStorage.setItem('appState', state)

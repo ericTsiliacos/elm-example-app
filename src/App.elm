@@ -27,6 +27,12 @@ type alias AppState =
     }
 
 
+type alias Flags =
+    { appState : Maybe AppState
+    , apiEndpoint : String
+    }
+
+
 type alias People =
     List Person
 
@@ -68,24 +74,24 @@ initialModel =
     }
 
 
-init : Maybe AppState -> ( Model, Cmd Msg )
-init appState =
-    case appState of
+init : Flags -> ( Model, Cmd Msg )
+init flags =
+    case flags.appState of
         Just appState ->
             { initialModel
                 | count = appState.count
                 , text = appState.text
                 , showText = appState.showText
             }
-                ! [ getPeople ]
+                ! [ getPeople flags.apiEndpoint ]
 
         Nothing ->
-            initialModel ! [ getPeople ]
+            initialModel ! [ getPeople flags.apiEndpoint ]
 
 
-getPeople : Cmd Msg
-getPeople =
-    Http.send GetPeople <| get "http://localhost:8888/people" peopleDecoder
+getPeople : String -> Cmd Msg
+getPeople apiEndpoint =
+    Http.send GetPeople <| get apiEndpoint peopleDecoder
 
 
 peopleDecoder : Decoder People
