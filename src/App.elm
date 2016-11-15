@@ -12,6 +12,9 @@ import Platform exposing (Task)
 import Task
 
 
+-- Model
+
+
 type alias Model =
     { count : Int
     , text : String
@@ -38,12 +41,6 @@ type alias AppState =
     }
 
 
-type alias Flags =
-    { appState : Maybe AppState
-    , apiEndpoint : String
-    }
-
-
 type alias People =
     List Person
 
@@ -54,8 +51,12 @@ type alias Person =
     }
 
 
-modelToValue : Model -> Value
-modelToValue model =
+
+-- Encoders
+
+
+modelToObject : Model -> Value
+modelToObject model =
     object
         [ ( "count", Json.Encode.int model.count )
         , ( "text", Json.Encode.string model.text )
@@ -65,7 +66,11 @@ modelToValue model =
 
 encodeModel : Model -> String
 encodeModel model =
-    encode 0 (modelToValue model)
+    encode 0 (modelToObject model)
+
+
+
+-- Decoders
 
 
 appStateDecoder : Decoder AppState
@@ -74,6 +79,37 @@ appStateDecoder =
         |> required "count" int
         |> required "text" string
         |> required "showText" bool
+
+
+peopleDecoder : Decoder People
+peopleDecoder =
+    at [ "data" ] (list personDecoder)
+
+
+personDecoder : Decoder Person
+personDecoder =
+    decode Person
+        |> required "id" int
+        |> required "name" string
+
+
+
+-- Http Requests
+
+
+getPeople : String -> Cmd Msg
+getPeople apiEndpoint =
+    Http.send GetPeople <| get apiEndpoint peopleDecoder
+
+
+
+-- Init
+
+
+type alias Flags =
+    { appState : Maybe AppState
+    , apiEndpoint : String
+    }
 
 
 init : Flags -> ( Model, Cmd Msg )
@@ -91,21 +127,8 @@ init flags =
             initialModel ! [ getPeople flags.apiEndpoint ]
 
 
-getPeople : String -> Cmd Msg
-getPeople apiEndpoint =
-    Http.send GetPeople <| get apiEndpoint peopleDecoder
 
-
-peopleDecoder : Decoder People
-peopleDecoder =
-    at [ "data" ] (list personDecoder)
-
-
-personDecoder : Decoder Person
-personDecoder =
-    decode Person
-        |> required "id" int
-        |> required "name" string
+-- Messages
 
 
 type Msg
@@ -118,7 +141,15 @@ type Msg
     | Reset
 
 
+
+-- Ports
+
+
 port saveStateToLocalStorage : String -> Cmd msg
+
+
+
+-- Update
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -180,6 +211,10 @@ storeAndReturn model =
           ]
 
 
+
+-- View
+
+
 view : Model -> Html Msg
 view model =
     div [ containerStyle ]
@@ -222,6 +257,10 @@ view model =
             , ul [] (List.map (\person -> li [] [ text person.name ]) model.people)
             ]
         ]
+
+
+
+-- View Helpers
 
 
 visibility : Bool -> ( String, String )
