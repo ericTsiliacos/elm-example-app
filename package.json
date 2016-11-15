@@ -8,7 +8,8 @@
   },
   "scripts": {
     "test": "./node_modules/elm-test/bin/elm-test",
-    "start": "./node_modules/elm-server/bin.js src/Main.elm"
+    "start": "./node_modules/elm-server/bin.js src/Main.elm",
+    "build": "elm make src/Main.elm --output index.js"
   },
   "private": true
 }
