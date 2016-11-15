@@ -1,13 +1,36 @@
 module Tests exposing (..)
 
-import App exposing (Msg(Decrement, GetPeople, Increment, LoadLocalStorageAppState, Reset, TextChange, ToggleCheckBox), Person, appStateDecoder, encodeModel, init, initialModel, peopleDecoder, update)
+import App
+    exposing
+        ( Msg
+            ( Decrement
+            , GetPeople
+            , Increment
+            , LoadLocalStorageAppState
+            , Reset
+            , TextChange
+            , ToggleCheckBox
+            )
+        , Person
+        , appStateDecoder
+        , encodeModel
+        , init
+        , initialModel
+        , peopleDecoder
+        , update
+        )
 import Http exposing (Error(Timeout))
 import Json.Decode
 import Json.Encode
 import List exposing (head)
 import Test exposing (..)
-import Expect exposing (fail)
+import Expect as To exposing (fail)
 import String
+
+
+update_ : Msg -> App.Model -> App.Model
+update_ msg model =
+    Tuple.first <| update msg model
 
 
 all : Test
@@ -15,10 +38,14 @@ all =
     describe "App"
         [ test "initial count is set to 0" <|
             \() ->
-                Expect.equal initialModel.count 0
+                initialModel.count |> To.equal 0
         , test "Increment" <|
             \() ->
-                Expect.equal (Tuple.first (update Increment initialModel)).count 1
+                let
+                    updatedModel =
+                        update_ Increment initialModel
+                in
+                    updatedModel.count |> To.equal 1
         , test "Reset" <|
             \() ->
                 let
@@ -29,35 +56,72 @@ all =
                         { initialModel | text = "boo", showText = False, count = 1, people = people }
 
                     updatedModel =
-                        Tuple.first (update Reset currentModel)
+                        update_ Reset currentModel
+
+                    expectedModel =
+                        { initialModel | people = people }
                 in
-                    Expect.equal updatedModel { initialModel | people = people }
+                    updatedModel |> To.equal expectedModel
         , describe "Decrement"
             [ test "by 1" <|
                 \() ->
-                    Expect.equal (Tuple.first (update Decrement { initialModel | count = 1 })) initialModel
+                    let
+                        currentModel =
+                            { initialModel | count = 1 }
+
+                        updatedModel =
+                            update_ Decrement currentModel
+                    in
+                        updatedModel |> To.equal initialModel
             , test "does not decerement past 0" <|
                 \() ->
-                    Expect.equal (Tuple.first (update Decrement initialModel)) initialModel
+                    let
+                        updatedModel =
+                            update_ Decrement initialModel
+                    in
+                        updatedModel |> To.equal initialModel
             ]
         , test "TextChange" <|
             \() ->
-                Expect.equal (Tuple.first (update (TextChange "batman") initialModel)).text "namtab"
+                let
+                    updatedModel =
+                        update_ (TextChange "batman") initialModel
+                in
+                    updatedModel.text |> To.equal "namtab"
         , describe "TextChange"
             [ test "when checked it sets showText to true" <|
                 \() ->
-                    Expect.equal (Tuple.first (update (ToggleCheckBox True) initialModel)).showText True
+                    let
+                        updatedModel =
+                            update_ (ToggleCheckBox True) initialModel
+                    in
+                        updatedModel.showText |> To.equal True
             , test "when unchecked it sets showText to false" <|
                 \() ->
-                    Expect.equal (Tuple.first (update (ToggleCheckBox False) initialModel)).showText False
+                    let
+                        updatedModel =
+                            update_ (ToggleCheckBox False) initialModel
+                    in
+                        updatedModel.showText |> To.equal False
             ]
         , describe "getting people"
             [ test "when fetching people succeeds it stores people on the model" <|
                 \() ->
-                    Expect.equal (Tuple.first (update (GetPeople (Ok [ { id = 1, name = "batman" } ])) initialModel)).people [ { id = 1, name = "batman" } ]
+                    let
+                        people =
+                            [ { id = 1, name = "batman" } ]
+
+                        updatedModel =
+                            update_ (GetPeople (Ok people)) initialModel
+                    in
+                        updatedModel.people |> To.equal [ { id = 1, name = "batman" } ]
             , test "when fetching people fails, it returns the current model" <|
                 \() ->
-                    Expect.equal (Tuple.first (update (GetPeople (Err Timeout)) initialModel)) initialModel
+                    let
+                        updatedModel =
+                            update_ (GetPeople (Err Timeout)) initialModel
+                    in
+                        updatedModel |> To.equal initialModel
             ]
         , test "decoding people" <|
             \() ->
@@ -76,7 +140,7 @@ all =
                             Err _ ->
                                 []
                 in
-                    Expect.equal people [ { id = 1, name = "batman" } ]
+                    people |> To.equal [ { id = 1, name = "batman" } ]
         , test "encoding a model to save to localstorage (excluding people)" <|
             \() ->
                 let
@@ -86,7 +150,7 @@ all =
                     actualJSONString =
                         encodeModel initialModel
                 in
-                    Expect.equal actualJSONString expectedJSONString
+                    actualJSONString |> To.equal expectedJSONString
         , test "decoding the appState" <|
             \() ->
                 let
@@ -98,28 +162,34 @@ all =
                 in
                     case appStateResult of
                         Ok appState ->
-                            Expect.equal appState { count = 0, text = "", showText = True }
+                            appState |> To.equal { count = 0, text = "", showText = True }
 
-                        Err err ->
-                            Expect.fail err
+                        Err withErr ->
+                            To.fail withErr
         , describe "LoadLocalStorageAppState"
             [ test "when the data is decodable, it updates the model with the saved appState" <|
                 \() ->
                     let
                         appStateJSONString =
                             "{\"count\":1,\"text\":\"namtab\",\"showText\":false}"
+
+                        updatedModel =
+                            update_ (LoadLocalStorageAppState appStateJSONString) initialModel
                     in
-                        Expect.equal
-                            (Tuple.first (update (LoadLocalStorageAppState appStateJSONString) initialModel))
-                            { count = 1, text = "namtab", showText = False, people = [] }
+                        updatedModel
+                            |> To.equal
+                                { count = 1, text = "namtab", showText = False, people = [] }
             , test "when the data is un-decodable, it returns the same model" <|
                 \() ->
                     let
                         appStateJSONString =
                             ""
+
+                        updatedModel =
+                            update_ (LoadLocalStorageAppState appStateJSONString) initialModel
                     in
-                        Expect.equal
-                            (Tuple.first (update (LoadLocalStorageAppState appStateJSONString) initialModel))
-                            initialModel
+                        updatedModel
+                            |> To.equal
+                                initialModel
             ]
         ]
