@@ -70,7 +70,7 @@ all =
                         update_ (TextChange "batman") initialModel
                 in
                     updatedModel.text |> To.equal "namtab"
-        , describe "TextChange"
+        , describe "ToggleCheckBox"
             [ test "when checked it sets showText to true" <|
                 \() ->
                     let
