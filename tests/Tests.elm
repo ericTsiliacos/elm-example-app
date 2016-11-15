@@ -1,24 +1,6 @@
 module Tests exposing (..)
 
-import App
-    exposing
-        ( Msg
-            ( Decrement
-            , GetPeople
-            , Increment
-            , LoadLocalStorageAppState
-            , Reset
-            , TextChange
-            , ToggleCheckBox
-            )
-        , Person
-        , appStateDecoder
-        , encodeModel
-        , init
-        , initialModel
-        , peopleDecoder
-        , update
-        )
+import App exposing (..)
 import Http exposing (Error(Timeout))
 import Json.Decode
 import Json.Encode
