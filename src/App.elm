@@ -68,17 +68,19 @@ initialModel =
     }
 
 
-port readStateFromLocalStorage : (String -> msg) -> Sub msg
+init : Maybe AppState -> ( Model, Cmd Msg )
+init appState =
+    case appState of
+        Just appState ->
+            { initialModel
+                | count = appState.count
+                , text = appState.text
+                , showText = appState.showText
+            }
+                ! [ getPeople ]
 
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    readStateFromLocalStorage LoadLocalStorageAppState
-
-
-init : ( Model, Cmd Msg )
-init =
-    initialModel ! [ getPeople ]
+        Nothing ->
+            initialModel ! [ getPeople ]
 
 
 getPeople : Cmd Msg

@@ -1,14 +1,14 @@
 module Main exposing (..)
 
-import App exposing (init, subscriptions, update, view)
-import Html exposing (program)
+import App exposing (init, update, view, AppState)
+import Html exposing (programWithFlags)
 
 
-main : Program Never App.Model App.Msg
+main : Program (Maybe AppState) App.Model App.Msg
 main =
-    program
+    programWithFlags
         { init = init
         , update = update
-        , subscriptions = subscriptions
+        , subscriptions = always Sub.none
         , view = view
         }
