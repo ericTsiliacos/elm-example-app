@@ -1,10 +1,10 @@
 module Main exposing (..)
 
 import App exposing (init, subscriptions, update, view)
-import Html.App exposing (program)
+import Html exposing (program)
 
 
-main : Program Never
+main : Program Never App.Model App.Msg
 main =
     program
         { init = init

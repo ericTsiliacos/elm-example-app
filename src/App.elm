@@ -1,10 +1,10 @@
 port module App exposing (..)
 
 import Html exposing (Attribute, Html, button, div, input, label, li, p, span, text, ul)
-import Html.Attributes exposing (checked, style, type', value)
+import Html.Attributes exposing (checked, style, type_, value)
 import Html.Events exposing (onCheck, onClick, onInput)
 import Http exposing (Error, get)
-import Json.Decode exposing (Decoder, at, bool, int, list, object2, string)
+import Json.Decode exposing (Decoder, at, bool, int, list, string)
 import Json.Decode.Pipeline exposing (decode, required)
 import Json.Encode exposing (Value, encode, object)
 import String exposing (reverse)
@@ -83,8 +83,7 @@ init =
 
 getPeople : Cmd Msg
 getPeople =
-    get peopleDecoder "http://localhost:8888/people"
-        |> Task.perform GetPeopleFailure GetPeopleSuccess
+    Http.send GetPeople <| get "http://localhost:8888/people" peopleDecoder
 
 
 peopleDecoder : Decoder People
@@ -104,8 +103,7 @@ type Msg
     | Decrement
     | TextChange String
     | ToggleCheckBox Bool
-    | GetPeopleFailure Error
-    | GetPeopleSuccess People
+    | GetPeople (Result Http.Error People)
     | LoadLocalStorageAppState String
     | Reset
 
@@ -141,10 +139,10 @@ update msg model =
         ToggleCheckBox checked ->
             storeAndReturn { model | showText = checked }
 
-        GetPeopleSuccess people ->
+        GetPeople (Ok people) ->
             { model | people = people } ! []
 
-        GetPeopleFailure _ ->
+        GetPeople (Err _) ->
             model ! []
 
         LoadLocalStorageAppState appStateJSONString ->
@@ -186,7 +184,7 @@ view model =
         , p []
             [ label [] [ text "Toggle Showing Text Output" ]
             , input
-                [ type' "checkbox"
+                [ type_ "checkbox"
                 , checked model.showText
                 , onCheck ToggleCheckBox
                 ]
