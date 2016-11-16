@@ -302,9 +302,7 @@ homeView model =
             ]
             [ p [] [ text <| "Reverse Text: " ++ model.text ]
             , input
-                [ onInput TextChange
-                , value model.text
-                ]
+                [ onInput TextChange ]
                 []
             ]
         , div []
