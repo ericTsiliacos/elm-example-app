@@ -29,6 +29,27 @@ all =
             \() ->
                 initialModel.count |> To.equal 0
           --
+        , describe "init"
+            [ test "loads the initial appState when it exists" <|
+                \() ->
+                    let
+                        appState =
+                            { count = 10, text = "s", showText = True }
+
+                        expectedModel =
+                            { initialModel | count = 10, text = "s", showText = True }
+                    in
+                        init { appState = Just appState, apiEndpoint = "" }
+                            |> Tuple.first
+                            |> To.equal expectedModel
+              --
+            , test "returns the defaultModel when thre is no initial appState" <|
+                \() ->
+                    init { appState = Nothing, apiEndpoint = "" }
+                        |> Tuple.first
+                        |> To.equal initialModel
+            ]
+          --
         , test "Increment" <|
             \() ->
                 let
