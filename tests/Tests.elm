@@ -8,6 +8,7 @@ import List exposing (head)
 import Test exposing (..)
 import Expect as To exposing (fail)
 import String
+import Navigation
 
 
 -- Test Helpers
@@ -16,6 +17,22 @@ import String
 update_ : Msg -> App.Model -> App.Model
 update_ msg model =
     Tuple.first <| update msg model
+
+
+locationBuilder : Navigation.Location
+locationBuilder =
+    { href = ""
+    , host = ""
+    , hostname = ""
+    , protocol = ""
+    , origin = ""
+    , port_ = ""
+    , pathname = ""
+    , search = ""
+    , hash = ""
+    , username = ""
+    , password = ""
+    }
 
 
 
@@ -38,16 +55,23 @@ all =
 
                         expectedModel =
                             { initialModel | count = 10, text = "s", showText = True }
+
+                        location =
+                            { locationBuilder | pathname = "/" }
                     in
-                        init { appState = Just appState, apiEndpoint = "" }
+                        init { appState = Just appState, apiEndpoint = "" } location
                             |> Tuple.first
                             |> To.equal expectedModel
               --
             , test "returns the defaultModel when thre is no initial appState" <|
                 \() ->
-                    init { appState = Nothing, apiEndpoint = "" }
-                        |> Tuple.first
-                        |> To.equal initialModel
+                    let
+                        location =
+                            { locationBuilder | pathname = "/" }
+                    in
+                        init { appState = Nothing, apiEndpoint = "" } location
+                            |> Tuple.first
+                            |> To.equal initialModel
             ]
           --
         , test "Increment" <|
@@ -215,5 +239,34 @@ all =
                         updatedModel
                             |> To.equal
                                 initialModel
+            ]
+          --
+        , describe "UrlChange"
+            [ test "/" <|
+                \() ->
+                    let
+                        location =
+                            { locationBuilder | pathname = "/" }
+                    in
+                        update_ (UrlChange location) initialModel
+                            |> To.equal { initialModel | currentRoute = Home }
+              --
+            , test "/first" <|
+                \() ->
+                    let
+                        location =
+                            { locationBuilder | pathname = "/first" }
+                    in
+                        update_ (UrlChange location) initialModel
+                            |> To.equal { initialModel | currentRoute = First }
+              --
+            , test "/second" <|
+                \() ->
+                    let
+                        location =
+                            { locationBuilder | pathname = "/second" }
+                    in
+                        update_ (UrlChange location) initialModel
+                            |> To.equal { initialModel | currentRoute = Second }
             ]
         ]

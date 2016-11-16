@@ -1,6 +1,7 @@
 port module App exposing (..)
 
 import Html exposing (Attribute, Html, button, div, input, label, li, p, span, text, ul)
+import UrlParser exposing (Parser, (</>), s, int, string, map, oneOf, parseHash, top, parsePath)
 import Html.Attributes exposing (checked, style, type_, value)
 import Html.Events exposing (onCheck, onClick, onInput)
 import Http exposing (Error, get)
@@ -8,8 +9,7 @@ import Json.Decode exposing (Decoder, at, bool, int, list, string)
 import Json.Decode.Pipeline exposing (decode, required)
 import Json.Encode exposing (Value, encode, object)
 import String exposing (reverse)
-import Platform exposing (Task)
-import Task
+import Navigation
 
 
 -- Model
@@ -21,6 +21,7 @@ type alias Model =
     , showText : Bool
     , people : People
     , getPeopleErrorMsg : Maybe String
+    , currentRoute : Route
     }
 
 
@@ -31,6 +32,7 @@ initialModel =
     , showText = True
     , people = []
     , getPeopleErrorMsg = Nothing
+    , currentRoute = Home
     }
 
 
@@ -76,9 +78,9 @@ encodeModel model =
 appStateDecoder : Decoder AppState
 appStateDecoder =
     decode AppState
-        |> required "count" int
-        |> required "text" string
-        |> required "showText" bool
+        |> required "count" Json.Decode.int
+        |> required "text" Json.Decode.string
+        |> required "showText" Json.Decode.bool
 
 
 peopleDecoder : Decoder People
@@ -89,8 +91,8 @@ peopleDecoder =
 personDecoder : Decoder Person
 personDecoder =
     decode Person
-        |> required "id" int
-        |> required "name" string
+        |> required "id" Json.Decode.int
+        |> required "name" Json.Decode.string
 
 
 
@@ -103,6 +105,25 @@ getPeople apiEndpoint =
 
 
 
+-- Routing
+
+
+type Route
+    = Home
+    | First
+    | Second
+
+
+route : Parser (Route -> a) a
+route =
+    oneOf
+        [ map Home top
+        , map First (s "first")
+        , map Second (s "second")
+        ]
+
+
+
 -- Init
 
 
@@ -112,14 +133,17 @@ type alias Flags =
     }
 
 
-init : Flags -> ( Model, Cmd Msg )
-init flags =
+init : Flags -> Navigation.Location -> ( Model, Cmd Msg )
+init flags location =
     case flags.appState of
         Just appState ->
             { initialModel
                 | count = appState.count
                 , text = appState.text
                 , showText = appState.showText
+                , currentRoute =
+                    Maybe.withDefault Home <|
+                        parsePath route location
             }
                 ! [ getPeople flags.apiEndpoint ]
 
@@ -138,6 +162,8 @@ type Msg
     | ToggleCheckBox Bool
     | GetPeople (Result Http.Error People)
     | LoadLocalStorageAppState String
+    | UrlChange Navigation.Location
+    | NewUrl String
     | Reset
 
 
@@ -203,6 +229,17 @@ update msg model =
                     Err _ ->
                         model ! []
 
+        NewUrl url ->
+            model ! [ Navigation.newUrl url ]
+
+        UrlChange location ->
+            { model
+                | currentRoute =
+                    Maybe.withDefault Home <|
+                        parsePath route location
+            }
+                ! []
+
 
 storeAndReturn : Model -> ( Model, Cmd Msg )
 storeAndReturn model =
@@ -218,6 +255,29 @@ storeAndReturn model =
 view : Model -> Html Msg
 view model =
     div [ containerStyle ]
+        [ button [ onClick (NewUrl "/") ] [ text "Home" ]
+        , button [ onClick (NewUrl "/first") ] [ text "First" ]
+        , button [ onClick (NewUrl "/second") ] [ text "Second" ]
+        , mainContentRouter model
+        ]
+
+
+mainContentRouter : Model -> Html Msg
+mainContentRouter model =
+    case model.currentRoute of
+        Home ->
+            homeView model
+
+        First ->
+            firstView model
+
+        Second ->
+            secondView model
+
+
+homeView : Model -> Html Msg
+homeView model =
+    div []
         [ button [ onClick Reset ] [ text "Reset" ]
         , div []
             [ p [] [ text ("Count: " ++ toString model.count) ]
@@ -240,7 +300,7 @@ view model =
                 [ visibility model.showText
                 ]
             ]
-            [ p [] [ text <| "Text: " ++ model.text ]
+            [ p [] [ text <| "Reverse Text: " ++ model.text ]
             , input
                 [ onInput TextChange
                 , value model.text
@@ -257,6 +317,16 @@ view model =
             , ul [] (List.map (\person -> li [] [ text person.name ]) model.people)
             ]
         ]
+
+
+firstView : Model -> Html Msg
+firstView _ =
+    p [] [ text "First View" ]
+
+
+secondView : Model -> Html Msg
+secondView _ =
+    p [] [ text "Second View" ]
 
 
 

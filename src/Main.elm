@@ -1,12 +1,12 @@
 module Main exposing (..)
 
-import App exposing (init, update, view, AppState, Flags)
-import Html exposing (programWithFlags)
+import App exposing (init, update, view, AppState, Flags, Msg(UrlChange))
+import Navigation exposing (programWithFlags)
 
 
 main : Program Flags App.Model App.Msg
 main =
-    programWithFlags
+    programWithFlags UrlChange
         { init = init
         , update = update
         , subscriptions = always Sub.none
