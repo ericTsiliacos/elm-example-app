@@ -18,6 +18,7 @@ import Navigation
 type alias Model =
     { count : Int
     , reverseText : String
+    , text : String
     , showText : Bool
     , people : People
     , getPeopleErrorMsg : Maybe String
@@ -29,6 +30,7 @@ initialModel : Model
 initialModel =
     { count = 0
     , reverseText = ""
+    , text = ""
     , showText = True
     , people = []
     , getPeopleErrorMsg = Nothing
@@ -187,6 +189,7 @@ update msg model =
                     | reverseText = initialModel.reverseText
                     , count = initialModel.count
                     , showText = initialModel.showText
+                    , text = initialModel.text
                 }
 
         Increment ->
@@ -201,7 +204,11 @@ update msg model =
                     storeAndReturn { model | count = model.count - 1 }
 
         TextChange value ->
-            storeAndReturn { model | reverseText = reverse value }
+            storeAndReturn
+                { model
+                    | reverseText = reverse value
+                    , text = value
+                }
 
         ToggleCheckBox checked ->
             storeAndReturn { model | showText = checked }
@@ -302,7 +309,9 @@ homeView model =
             ]
             [ p [] [ text <| "Reverse Text: " ++ model.reverseText ]
             , input
-                [ onInput TextChange ]
+                [ onInput TextChange
+                , value model.text
+                ]
                 []
             ]
         , div []

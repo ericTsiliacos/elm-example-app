@@ -89,7 +89,13 @@ all =
                         [ { id = 1, name = "batman" } ]
 
                     currentModel =
-                        { initialModel | reverseText = "boo", showText = False, count = 1, people = people }
+                        { initialModel
+                            | reverseText = "boo"
+                            , showText = False
+                            , text = "oob"
+                            , count = 1
+                            , people = people
+                        }
 
                     updatedModel =
                         update_ Reset currentModel
@@ -126,7 +132,12 @@ all =
                     updatedModel =
                         update_ (TextChange "batman") initialModel
                 in
-                    updatedModel.reverseText |> To.equal "namtab"
+                    updatedModel
+                        |> To.equal
+                            { initialModel
+                                | reverseText = "namtab"
+                                , text = "batman"
+                            }
           --
         , describe "ToggleCheckBox"
             [ test "when checked it sets showText to true" <|
