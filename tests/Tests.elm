@@ -51,10 +51,10 @@ all =
                 \() ->
                     let
                         appState =
-                            { count = 10, text = "s", showText = True }
+                            { count = 10, reverseText = "s", showText = True }
 
                         expectedModel =
-                            { initialModel | count = 10, text = "s", showText = True }
+                            { initialModel | count = 10, reverseText = "s", showText = True }
 
                         location =
                             { locationBuilder | pathname = "/" }
@@ -89,7 +89,7 @@ all =
                         [ { id = 1, name = "batman" } ]
 
                     currentModel =
-                        { initialModel | text = "boo", showText = False, count = 1, people = people }
+                        { initialModel | reverseText = "boo", showText = False, count = 1, people = people }
 
                     updatedModel =
                         update_ Reset currentModel
@@ -126,7 +126,7 @@ all =
                     updatedModel =
                         update_ (TextChange "batman") initialModel
                 in
-                    updatedModel.text |> To.equal "namtab"
+                    updatedModel.reverseText |> To.equal "namtab"
           --
         , describe "ToggleCheckBox"
             [ test "when checked it sets showText to true" <|
@@ -190,7 +190,7 @@ all =
             \() ->
                 let
                     expectedJSONString =
-                        "{\"count\":0,\"text\":\"\",\"showText\":true}"
+                        "{\"count\":0,\"reverseText\":\"\",\"showText\":true}"
 
                     actualJSONString =
                         encodeModel initialModel
@@ -201,14 +201,14 @@ all =
             \() ->
                 let
                     appStateJSONString =
-                        "{\"count\":0,\"text\":\"\",\"showText\":true}"
+                        "{\"count\":0,\"reverseText\":\"\",\"showText\":true}"
 
                     appStateResult =
                         Json.Decode.decodeString appStateDecoder appStateJSONString
                 in
                     case appStateResult of
                         Ok appState ->
-                            appState |> To.equal { count = 0, text = "", showText = True }
+                            appState |> To.equal { count = 0, reverseText = "", showText = True }
 
                         Err withErr ->
                             To.fail withErr
@@ -218,14 +218,14 @@ all =
                 \() ->
                     let
                         appStateJSONString =
-                            "{\"count\":1,\"text\":\"namtab\",\"showText\":false}"
+                            "{\"count\":1,\"reverseText\":\"namtab\",\"showText\":false}"
 
                         updatedModel =
                             update_ (LoadLocalStorageAppState appStateJSONString) initialModel
                     in
                         updatedModel
                             |> To.equal
-                                { initialModel | count = 1, text = "namtab", showText = False, people = [] }
+                                { initialModel | count = 1, reverseText = "namtab", showText = False, people = [] }
               --
             , test "when the data is un-decodable, it returns the same model" <|
                 \() ->

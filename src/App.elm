@@ -17,7 +17,7 @@ import Navigation
 
 type alias Model =
     { count : Int
-    , text : String
+    , reverseText : String
     , showText : Bool
     , people : People
     , getPeopleErrorMsg : Maybe String
@@ -28,7 +28,7 @@ type alias Model =
 initialModel : Model
 initialModel =
     { count = 0
-    , text = ""
+    , reverseText = ""
     , showText = True
     , people = []
     , getPeopleErrorMsg = Nothing
@@ -38,7 +38,7 @@ initialModel =
 
 type alias AppState =
     { count : Int
-    , text : String
+    , reverseText : String
     , showText : Bool
     }
 
@@ -61,7 +61,7 @@ modelToObject : Model -> Value
 modelToObject model =
     object
         [ ( "count", Json.Encode.int model.count )
-        , ( "text", Json.Encode.string model.text )
+        , ( "reverseText", Json.Encode.string model.reverseText )
         , ( "showText", Json.Encode.bool model.showText )
         ]
 
@@ -79,7 +79,7 @@ appStateDecoder : Decoder AppState
 appStateDecoder =
     decode AppState
         |> required "count" Json.Decode.int
-        |> required "text" Json.Decode.string
+        |> required "reverseText" Json.Decode.string
         |> required "showText" Json.Decode.bool
 
 
@@ -139,7 +139,7 @@ init flags location =
         Just appState ->
             { initialModel
                 | count = appState.count
-                , text = appState.text
+                , reverseText = appState.reverseText
                 , showText = appState.showText
                 , currentRoute =
                     Maybe.withDefault Home <|
@@ -184,7 +184,7 @@ update msg model =
         Reset ->
             storeAndReturn
                 { model
-                    | text = initialModel.text
+                    | reverseText = initialModel.reverseText
                     , count = initialModel.count
                     , showText = initialModel.showText
                 }
@@ -201,7 +201,7 @@ update msg model =
                     storeAndReturn { model | count = model.count - 1 }
 
         TextChange value ->
-            storeAndReturn { model | text = reverse value }
+            storeAndReturn { model | reverseText = reverse value }
 
         ToggleCheckBox checked ->
             storeAndReturn { model | showText = checked }
@@ -220,7 +220,7 @@ update msg model =
                 case appStateResult of
                     Ok appState ->
                         { model
-                            | text = appState.text
+                            | reverseText = appState.reverseText
                             , count = appState.count
                             , showText = appState.showText
                         }
@@ -300,7 +300,7 @@ homeView model =
                 [ visibility model.showText
                 ]
             ]
-            [ p [] [ text <| "Reverse Text: " ++ model.text ]
+            [ p [] [ text <| "Reverse Text: " ++ model.reverseText ]
             , input
                 [ onInput TextChange ]
                 []
