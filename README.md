@@ -28,7 +28,7 @@ elm-test --watch
 rspec
 ```
 
-## Elm Examples
+## Elm Examples Included
 
 - Http Request(s): GET
 - Navigation & Routing
