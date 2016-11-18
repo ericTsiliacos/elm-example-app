@@ -5,6 +5,7 @@
 - Saving to LocalStorage
 - Using Ports
 - Unit Testing
+- Using Flags to initialize Elm App (apiEndpoint, loading initial data from localstorage)
 
 ## Prerequisites
 ```
