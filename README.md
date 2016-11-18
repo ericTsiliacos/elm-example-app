@@ -22,6 +22,19 @@ elm-live src/Main.elm --output=index.js --open --debug
 elm-test --watch
 ```
 
+## Feature Tests
+
+```
+rspec
+```
+
+## Elm Examples
+
+- Http Request(s): GET
+- Navigation & Routing
+- Saving to LocalStorage
+- Using Ports
+
 ## Setting up a new project
 
 ```
