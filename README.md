@@ -1,3 +1,10 @@
+## Elm Example App Includes
+
+- Http Request(s): GET
+- Navigation & Routing
+- Saving to LocalStorage
+- Using Ports
+
 ## Prerequisites
 ```
 npm i -g elm elm-test
@@ -28,14 +35,7 @@ elm-test --watch
 rspec
 ```
 
-## Elm Examples Included
-
-- Http Request(s): GET
-- Navigation & Routing
-- Saving to LocalStorage
-- Using Ports
-
-Todo:
+### Examples Todo:
 
 - POST request example
 - Websocket example
