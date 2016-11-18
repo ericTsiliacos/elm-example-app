@@ -4,6 +4,7 @@
 - Navigation & Routing
 - Saving to LocalStorage
 - Using Ports
+- Unit Testing
 
 ## Prerequisites
 ```
