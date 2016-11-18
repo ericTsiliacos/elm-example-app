@@ -30,7 +30,7 @@ elm-live src/Main.elm --output=index.js --open --debug
 elm-test --watch
 ```
 
-## Feature Tests
+## Feature Specs
 
 ```
 rspec
