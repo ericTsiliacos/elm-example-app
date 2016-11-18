@@ -54,16 +54,22 @@ all =
                             { count = 10, reverseText = "s", showText = True }
 
                         expectedModel =
-                            { initialModel | count = 10, reverseText = "s", showText = True }
+                            { initialModel
+                                | count = 10
+                                , reverseText = "s"
+                                , showText = True
+                            }
 
                         location =
                             { locationBuilder | pathname = "/" }
                     in
-                        init { appState = Just appState, apiEndpoint = "" } location
+                        init
+                            { appState = Just appState, apiEndpoint = "" }
+                            location
                             |> Tuple.first
                             |> To.equal expectedModel
               --
-            , test "returns the defaultModel when thre is no initial appState" <|
+            , test "returns the defaultModel when there is no initial appState" <|
                 \() ->
                     let
                         location =
@@ -158,7 +164,7 @@ all =
             ]
           --
         , describe "getting people"
-            [ test "when fetching people succeeds it stores people on the model" <|
+            [ test "when fetching people succeeds, store people on the model" <|
                 \() ->
                     let
                         people =
@@ -167,7 +173,9 @@ all =
                         updatedModel =
                             update_ (GetPeople (Ok people)) initialModel
                     in
-                        updatedModel.people |> To.equal [ { id = 1, name = "batman" } ]
+                        updatedModel.people
+                            |> To.equal
+                                [ { id = 1, name = "batman" } ]
               --
             , test "when fetching people fails, it returns the current model" <|
                 \() ->
@@ -175,7 +183,8 @@ all =
                         updatedModel =
                             update_ (GetPeople (Err Timeout)) initialModel
                     in
-                        updatedModel.getPeopleErrorMsg |> To.equal (Just "Timeout")
+                        updatedModel.getPeopleErrorMsg
+                            |> To.equal (Just "Timeout")
             ]
           --
         , test "decoding people" <|
@@ -215,28 +224,42 @@ all =
                         "{\"count\":0,\"reverseText\":\"\",\"showText\":true}"
 
                     appStateResult =
-                        Json.Decode.decodeString appStateDecoder appStateJSONString
+                        Json.Decode.decodeString
+                            appStateDecoder
+                            appStateJSONString
                 in
                     case appStateResult of
                         Ok appState ->
-                            appState |> To.equal { count = 0, reverseText = "", showText = True }
+                            appState
+                                |> To.equal
+                                    { count = 0
+                                    , reverseText = ""
+                                    , showText = True
+                                    }
 
                         Err withErr ->
                             To.fail withErr
           --
         , describe "LoadLocalStorageAppState"
-            [ test "when the data is decodable, it updates the model with the saved appState" <|
+            [ test "updates the model with the saved appState with decodable appState" <|
                 \() ->
                     let
                         appStateJSONString =
                             "{\"count\":1,\"reverseText\":\"namtab\",\"showText\":false}"
 
                         updatedModel =
-                            update_ (LoadLocalStorageAppState appStateJSONString) initialModel
+                            update_
+                                (LoadLocalStorageAppState appStateJSONString)
+                                initialModel
                     in
                         updatedModel
                             |> To.equal
-                                { initialModel | count = 1, reverseText = "namtab", showText = False, people = [] }
+                                { initialModel
+                                    | count = 1
+                                    , reverseText = "namtab"
+                                    , showText = False
+                                    , people = []
+                                }
               --
             , test "when the data is un-decodable, it returns the same model" <|
                 \() ->
@@ -245,7 +268,9 @@ all =
                             ""
 
                         updatedModel =
-                            update_ (LoadLocalStorageAppState appStateJSONString) initialModel
+                            update_
+                                (LoadLocalStorageAppState appStateJSONString)
+                                initialModel
                     in
                         updatedModel
                             |> To.equal
