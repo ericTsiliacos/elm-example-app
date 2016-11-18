@@ -35,6 +35,13 @@ rspec
 - Saving to LocalStorage
 - Using Ports
 
+Todo:
+
+- POST request example
+- Websocket example
+- Extract and reuse/nest another elm widget
+- Embed Elm: integrate elm with another javascript famework by like React/Redux
+
 ## Setting up a new project
 
 ```
