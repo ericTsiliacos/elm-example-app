@@ -19,7 +19,7 @@ Download the latest version of ```elm-format``` here: https://github.com/avh4/el
 ## Run
 
 ```
-json-server good_db.json -p 8888
+json-server people.json -p 8888
 
 elm-live src/Main.elm --output=index.js --open --debug
 ```
