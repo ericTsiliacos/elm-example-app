@@ -21,7 +21,7 @@ type alias Model =
     , text : String
     , showText : Bool
     , people : People
-    , getPeopleErrorMsg : Maybe String
+    , getPeopleErrorMsg : String
     , currentRoute : Route
     }
 
@@ -33,7 +33,7 @@ initialModel =
     , text = ""
     , showText = True
     , people = []
-    , getPeopleErrorMsg = Nothing
+    , getPeopleErrorMsg = ""
     , currentRoute = Home
     }
 
@@ -220,7 +220,7 @@ update msg model =
             { model | people = people } ! []
 
         GetPeople (Err err) ->
-            { model | getPeopleErrorMsg = Just <| toString err } ! []
+            { model | getPeopleErrorMsg = toString err } ! []
 
         LoadLocalStorageAppState appStateJSONString ->
             let
@@ -318,12 +318,7 @@ homeView model =
                 []
             ]
         , div []
-            [ p []
-                [ text
-                    ("GET /people: "
-                        ++ (Maybe.withDefault "" model.getPeopleErrorMsg)
-                    )
-                ]
+            [ p [] [ text <| "GET /people: " ++ (model.getPeopleErrorMsg) ]
             , ul [] (List.map (\person -> li [] [ text person.name ]) model.people)
             ]
         ]

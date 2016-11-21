@@ -184,7 +184,7 @@ all =
                             update_ (GetPeople (Err Timeout)) initialModel
                     in
                         updatedModel.getPeopleErrorMsg
-                            |> To.equal (Just "Timeout")
+                            |> To.equal "Timeout"
             ]
           --
         , test "decoding people" <|
