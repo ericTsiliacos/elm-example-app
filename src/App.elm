@@ -184,34 +184,37 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Reset ->
-            storeAndReturn
-                { model
-                    | reverseText = initialModel.reverseText
-                    , count = initialModel.count
-                    , showText = initialModel.showText
-                    , text = initialModel.text
-                }
+            { model
+                | reverseText = initialModel.reverseText
+                , count = initialModel.count
+                , showText = initialModel.showText
+                , text = initialModel.text
+            }
+                |> storeInLocalStorage
 
         Increment ->
-            storeAndReturn { model | count = model.count + 1 }
+            { model | count = model.count + 1 }
+                |> storeInLocalStorage
 
         Decrement ->
             case model.count of
                 0 ->
-                    storeAndReturn model
+                    model |> storeInLocalStorage
 
                 _ ->
-                    storeAndReturn { model | count = model.count - 1 }
+                    { model | count = model.count - 1 }
+                        |> storeInLocalStorage
 
         TextChange value ->
-            storeAndReturn
-                { model
-                    | reverseText = reverse value
-                    , text = value
-                }
+            { model
+                | reverseText = reverse value
+                , text = value
+            }
+                |> storeInLocalStorage
 
         ToggleCheckBox checked ->
-            storeAndReturn { model | showText = checked }
+            { model | showText = checked }
+                |> storeInLocalStorage
 
         GetPeople (Ok people) ->
             { model | people = people } ! []
@@ -248,8 +251,8 @@ update msg model =
                 ! []
 
 
-storeAndReturn : Model -> ( Model, Cmd Msg )
-storeAndReturn model =
+storeInLocalStorage : Model -> ( Model, Cmd Msg )
+storeInLocalStorage model =
     model
         ! [ saveStateToLocalStorage <| encodeModel model
           ]
