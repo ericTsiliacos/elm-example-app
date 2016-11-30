@@ -18,6 +18,7 @@ import Counter exposing (..)
 
 type alias Model =
     { count : Int
+    , count1 : Int
     , reverseText : String
     , text : String
     , showText : Bool
@@ -30,6 +31,7 @@ type alias Model =
 initialModel : Model
 initialModel =
     { count = 0
+    , count1 = 0
     , reverseText = ""
     , text = ""
     , showText = True
@@ -41,6 +43,7 @@ initialModel =
 
 type alias AppState =
     { count : Int
+    , count1 : Int
     , reverseText : String
     , showText : Bool
     }
@@ -64,6 +67,7 @@ modelToObject : Model -> Value
 modelToObject model =
     object
         [ ( "count", Json.Encode.int model.count )
+        , ( "count1", Json.Encode.int model.count1 )
         , ( "reverseText", Json.Encode.string model.reverseText )
         , ( "showText", Json.Encode.bool model.showText )
         ]
@@ -82,6 +86,7 @@ appStateDecoder : Decoder AppState
 appStateDecoder =
     decode AppState
         |> required "count" Json.Decode.int
+        |> required "count1" Json.Decode.int
         |> required "reverseText" Json.Decode.string
         |> required "showText" Json.Decode.bool
 
@@ -142,6 +147,7 @@ init flags location =
         Just appState ->
             { initialModel
                 | count = appState.count
+                , count1 = appState.count1
                 , reverseText = appState.reverseText
                 , showText = appState.showText
                 , currentRoute =
@@ -160,6 +166,7 @@ init flags location =
 
 type Msg
     = CounterMsg Counter.Msg
+    | CounterMsg1 Counter.Msg
     | TextChange String
     | ToggleCheckBox Bool
     | GetPeople (Result Http.Error People)
@@ -187,6 +194,7 @@ update msg model =
             { model
                 | reverseText = initialModel.reverseText
                 , count = 0
+                , count1 = 0
                 , showText = initialModel.showText
                 , text = initialModel.text
             }
@@ -198,6 +206,14 @@ update msg model =
                     Counter.update subMsg model.count
             in
                 { model | count = newCounterState }
+                    |> storeInLocalStorage
+
+        CounterMsg1 subMsg ->
+            let
+                newCounterState =
+                    Counter.update subMsg model.count1
+            in
+                { model | count1 = newCounterState }
                     |> storeInLocalStorage
 
         TextChange value ->
@@ -227,6 +243,7 @@ update msg model =
                         { model
                             | reverseText = appState.reverseText
                             , count = appState.count
+                            , count1 = appState.count1
                             , showText = appState.showText
                         }
                             ! []
@@ -284,9 +301,24 @@ homeView : Model -> Html Msg
 homeView model =
     div []
         [ button [ onClick Reset ] [ text "Reset" ]
-        , Counter.view model.count CounterMsg
-        , Counter.view model.count CounterMsg
-        , p []
+        , countersView model
+        , reverseTextInputView model
+        , showPeopleView model
+        ]
+
+
+countersView : Model -> Html Msg
+countersView model =
+    div []
+        [ Counter.view model.count CounterMsg
+        , Counter.view model.count1 CounterMsg1
+        ]
+
+
+reverseTextInputView : Model -> Html Msg
+reverseTextInputView model =
+    div []
+        [ p []
             [ label [] [ text "Toggle Showing Text Output" ]
             , input
                 [ type_ "checkbox"
@@ -307,10 +339,14 @@ homeView model =
                 ]
                 []
             ]
-        , div []
-            [ p [] [ text <| "GET /people: " ++ (model.getPeopleErrorMsg) ]
-            , ul [] (List.map (\person -> li [] [ text person.name ]) model.people)
-            ]
+        ]
+
+
+showPeopleView : Model -> Html Msg
+showPeopleView model =
+    div []
+        [ p [] [ text <| "GET /people: " ++ (model.getPeopleErrorMsg) ]
+        , ul [] (List.map (\person -> li [] [ text person.name ]) model.people)
         ]
 
 
