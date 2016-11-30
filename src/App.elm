@@ -260,6 +260,7 @@ update msg model =
                             | reverseText = appState.reverseText
                             , count = appState.count
                             , count1 = appState.count1
+                            , count2 = appState.count2
                             , showText = appState.showText
                         }
                             ! []

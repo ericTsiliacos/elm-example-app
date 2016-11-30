@@ -52,11 +52,18 @@ all =
                 \() ->
                     let
                         appState =
-                            { count = 10, reverseText = "s", showText = True }
+                            { count = 10
+                            , count1 = 10
+                            , count2 = 10
+                            , reverseText = "s"
+                            , showText = True
+                            }
 
                         expectedModel =
                             { initialModel
                                 | count = 10
+                                , count1 = 10
+                                , count2 = 10
                                 , reverseText = "s"
                                 , showText = True
                             }
@@ -211,7 +218,7 @@ all =
             \() ->
                 let
                     expectedJSONString =
-                        "{\"count\":0,\"reverseText\":\"\",\"showText\":true}"
+                        "{\"count\":0,\"count1\":0,\"count2\":0,\"reverseText\":\"\",\"showText\":true}"
 
                     actualJSONString =
                         encodeModel initialModel
@@ -222,7 +229,7 @@ all =
             \() ->
                 let
                     appStateJSONString =
-                        "{\"count\":0,\"reverseText\":\"\",\"showText\":true}"
+                        "{\"count\":0,\"count1\":0,\"count2\":0,\"reverseText\":\"\",\"showText\":true}"
 
                     appStateResult =
                         Json.Decode.decodeString
@@ -234,6 +241,8 @@ all =
                             appState
                                 |> To.equal
                                     { count = 0
+                                    , count1 = 0
+                                    , count2 = 0
                                     , reverseText = ""
                                     , showText = True
                                     }
@@ -246,7 +255,7 @@ all =
                 \() ->
                     let
                         appStateJSONString =
-                            "{\"count\":1,\"reverseText\":\"namtab\",\"showText\":false}"
+                            "{\"count\":1,\"count1\":1,\"count2\":1,\"reverseText\":\"namtab\",\"showText\":false}"
 
                         updatedModel =
                             update_
@@ -257,6 +266,8 @@ all =
                             |> To.equal
                                 { initialModel
                                     | count = 1
+                                    , count1 = 1
+                                    , count2 = 1
                                     , reverseText = "namtab"
                                     , showText = False
                                     , people = []
