@@ -119,7 +119,7 @@ type Route
 route : Parser (Route -> a) a
 route =
     oneOf
-        [ map Home top
+        [ map Home (s "index.html")
         , map First (s "first")
         , map Second (s "second")
         ]
@@ -265,7 +265,7 @@ storeInLocalStorage model =
 view : Model -> Html Msg
 view model =
     div [ containerStyle ]
-        [ button [ onClick (NewUrl "/") ] [ text "Home" ]
+        [ button [ onClick (NewUrl "/index.html") ] [ text "Home" ]
         , button [ onClick (NewUrl "/first") ] [ text "First" ]
         , button [ onClick (NewUrl "/second") ] [ text "Second" ]
         , mainContentRouter model
