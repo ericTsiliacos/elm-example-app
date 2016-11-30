@@ -6,18 +6,7 @@ import Html exposing (map)
 
 
 type alias Model =
-    { count : Int
-    }
-
-
-initWithCount : Int -> Model
-initWithCount initialCount =
-    { count = initialCount }
-
-
-getCount : Model -> Int
-getCount model =
-    model.count
+    Int
 
 
 type Msg
@@ -29,22 +18,22 @@ update : Msg -> Model -> Model
 update msg model =
     case msg of
         Increment ->
-            { model | count = model.count + 1 }
+            model + 1
 
         Decrement ->
-            case model.count of
+            case model of
                 0 ->
                     model
 
                 _ ->
-                    { model | count = model.count - 1 }
+                    model - 1
 
 
 view : Model -> (Msg -> msg) -> Html msg
 view model upgrade =
     map upgrade <|
         div []
-            [ p [] [ text ("Count: " ++ toString model.count) ]
+            [ p [] [ text ("Count: " ++ toString model) ]
             , button [ onClick Increment ]
                 [ text "+" ]
             , button [ onClick Decrement ]

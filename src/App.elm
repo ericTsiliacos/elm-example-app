@@ -195,9 +195,9 @@ update msg model =
         CounterMsg subMsg ->
             let
                 newCounterState =
-                    Counter.update subMsg (Counter.initWithCount model.count)
+                    Counter.update subMsg model.count
             in
-                { model | count = Counter.getCount newCounterState }
+                { model | count = newCounterState }
                     |> storeInLocalStorage
 
         TextChange value ->
@@ -284,7 +284,8 @@ homeView : Model -> Html Msg
 homeView model =
     div []
         [ button [ onClick Reset ] [ text "Reset" ]
-        , Counter.view (Counter.initWithCount model.count) CounterMsg
+        , Counter.view model.count CounterMsg
+        , Counter.view model.count CounterMsg
         , p []
             [ label [] [ text "Toggle Showing Text Output" ]
             , input
