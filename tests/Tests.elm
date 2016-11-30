@@ -9,6 +9,7 @@ import Test exposing (..)
 import Expect as To exposing (fail)
 import String
 import Navigation
+import Counter
 
 
 -- Test Helpers
@@ -84,7 +85,7 @@ all =
             \() ->
                 let
                     updatedModel =
-                        update_ Increment initialModel
+                        update_ (CounterMsg Counter.Increment) initialModel
                 in
                     updatedModel.count |> To.equal 1
           --
@@ -119,7 +120,7 @@ all =
                             { initialModel | count = 1 }
 
                         updatedModel =
-                            update_ Decrement currentModel
+                            update_ (CounterMsg Counter.Decrement) currentModel
                     in
                         updatedModel |> To.equal initialModel
               --
@@ -127,7 +128,7 @@ all =
                 \() ->
                     let
                         updatedModel =
-                            update_ Decrement initialModel
+                            update_ (CounterMsg Counter.Decrement) initialModel
                     in
                         updatedModel |> To.equal initialModel
             ]

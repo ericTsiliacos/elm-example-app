@@ -10,6 +10,7 @@ import Json.Decode.Pipeline exposing (decode, required)
 import Json.Encode exposing (Value, encode, object)
 import String exposing (reverse)
 import Navigation
+import Counter exposing (..)
 
 
 -- Model
@@ -158,8 +159,7 @@ init flags location =
 
 
 type Msg
-    = Increment
-    | Decrement
+    = CounterMsg Counter.Msg
     | TextChange String
     | ToggleCheckBox Bool
     | GetPeople (Result Http.Error People)
@@ -186,24 +186,19 @@ update msg model =
         Reset ->
             { model
                 | reverseText = initialModel.reverseText
-                , count = initialModel.count
+                , count = 0
                 , showText = initialModel.showText
                 , text = initialModel.text
             }
                 |> storeInLocalStorage
 
-        Increment ->
-            { model | count = model.count + 1 }
-                |> storeInLocalStorage
-
-        Decrement ->
-            case model.count of
-                0 ->
-                    model |> storeInLocalStorage
-
-                _ ->
-                    { model | count = model.count - 1 }
-                        |> storeInLocalStorage
+        CounterMsg subMsg ->
+            let
+                newCounterState =
+                    Counter.update subMsg (Counter.initWithCount model.count)
+            in
+                { model | count = Counter.getCount newCounterState }
+                    |> storeInLocalStorage
 
         TextChange value ->
             { model
@@ -289,13 +284,7 @@ homeView : Model -> Html Msg
 homeView model =
     div []
         [ button [ onClick Reset ] [ text "Reset" ]
-        , div []
-            [ p [] [ text ("Count: " ++ toString model.count) ]
-            , button [ onClick Increment ]
-                [ text "+" ]
-            , button [ onClick Decrement ]
-                [ text "-" ]
-            ]
+        , Counter.view (Counter.initWithCount model.count) CounterMsg
         , p []
             [ label [] [ text "Toggle Showing Text Output" ]
             , input
