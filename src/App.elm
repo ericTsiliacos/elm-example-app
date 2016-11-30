@@ -19,6 +19,7 @@ import Counter exposing (..)
 type alias Model =
     { count : Int
     , count1 : Int
+    , count2 : Int
     , reverseText : String
     , text : String
     , showText : Bool
@@ -32,6 +33,7 @@ initialModel : Model
 initialModel =
     { count = 0
     , count1 = 0
+    , count2 = 0
     , reverseText = ""
     , text = ""
     , showText = True
@@ -44,6 +46,7 @@ initialModel =
 type alias AppState =
     { count : Int
     , count1 : Int
+    , count2 : Int
     , reverseText : String
     , showText : Bool
     }
@@ -68,6 +71,7 @@ modelToObject model =
     object
         [ ( "count", Json.Encode.int model.count )
         , ( "count1", Json.Encode.int model.count1 )
+        , ( "count2", Json.Encode.int model.count1 )
         , ( "reverseText", Json.Encode.string model.reverseText )
         , ( "showText", Json.Encode.bool model.showText )
         ]
@@ -87,6 +91,7 @@ appStateDecoder =
     decode AppState
         |> required "count" Json.Decode.int
         |> required "count1" Json.Decode.int
+        |> required "count2" Json.Decode.int
         |> required "reverseText" Json.Decode.string
         |> required "showText" Json.Decode.bool
 
@@ -148,6 +153,7 @@ init flags location =
             { initialModel
                 | count = appState.count
                 , count1 = appState.count1
+                , count2 = appState.count2
                 , reverseText = appState.reverseText
                 , showText = appState.showText
                 , currentRoute =
@@ -167,6 +173,7 @@ init flags location =
 type Msg
     = CounterMsg Counter.Msg
     | CounterMsg1 Counter.Msg
+    | CounterMsg2 Counter.Msg
     | TextChange String
     | ToggleCheckBox Bool
     | GetPeople (Result Http.Error People)
@@ -195,6 +202,7 @@ update msg model =
                 | reverseText = initialModel.reverseText
                 , count = 0
                 , count1 = 0
+                , count2 = 0
                 , showText = initialModel.showText
                 , text = initialModel.text
             }
@@ -214,6 +222,14 @@ update msg model =
                     Counter.update subMsg model.count1
             in
                 { model | count1 = newCounterState }
+                    |> storeInLocalStorage
+
+        CounterMsg2 subMsg ->
+            let
+                newCounterState =
+                    Counter.update subMsg model.count2
+            in
+                { model | count2 = newCounterState }
                     |> storeInLocalStorage
 
         TextChange value ->
@@ -312,6 +328,7 @@ countersView model =
     div []
         [ Counter.view model.count CounterMsg
         , Counter.view model.count1 CounterMsg1
+        , Counter.view model.count2 CounterMsg2
         ]
 
 
