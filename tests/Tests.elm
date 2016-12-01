@@ -43,16 +43,13 @@ locationBuilder =
 all : Test
 all =
     describe "App"
-        [ test "initial counts are set to 0" <|
-            \() ->
-                initialModel.counts |> To.equal [ 0, 0, 0 ]
-          --
-        , describe "init"
+        [ describe "init"
             [ test "loads the initial appState when it exists" <|
                 \() ->
                     let
                         appState =
                             { counts = [ 10 ]
+                            , numberOfCounters = 0
                             , reverseText = "s"
                             , showText = True
                             }
@@ -60,6 +57,7 @@ all =
                         expectedModel =
                             { initialModel
                                 | counts = [ 10 ]
+                                , numberOfCounters = 0
                                 , reverseText = "s"
                                 , showText = True
                             }
@@ -88,9 +86,70 @@ all =
             \() ->
                 let
                     updatedModel =
-                        update_ (CountersMsg 0 Counter.Increment) initialModel
+                        update_ (CountersMsg 0 Counter.Increment) { initialModel | counts = [ 0, 0, 0 ] }
                 in
                     updatedModel.counts |> To.equal [ 1, 0, 0 ]
+          --
+        , describe "Decrement"
+            [ test "by 1" <|
+                \() ->
+                    let
+                        currentModel =
+                            { initialModel | counts = [ 1, 0, 0 ] }
+
+                        updatedModel =
+                            update_ (CountersMsg 0 Counter.Decrement) currentModel
+                    in
+                        updatedModel |> To.equal { initialModel | counts = [ 0, 0, 0 ] }
+              --
+            , test "does not decerement past 0" <|
+                \() ->
+                    let
+                        updatedModel =
+                            update_ (CountersMsg 0 Counter.Decrement) initialModel
+                    in
+                        updatedModel |> To.equal initialModel
+            ]
+          --
+        , describe "CountersSliderChange"
+            [ test "removes counters when the change is less than the current number of counters" <|
+                \() ->
+                    let
+                        currentModel =
+                            { initialModel
+                                | counts = [ 1, 1, 1 ]
+                                , numberOfCounters = 3
+                            }
+
+                        updatedModel =
+                            update_ (CountersSliderChange "2") currentModel
+                    in
+                        updatedModel
+                            |> To.equal
+                                { initialModel
+                                    | counts = [ 1, 1 ]
+                                    , numberOfCounters = 2
+                                }
+              --
+            , test "creates counters that are initialized to 0 when the current number of counters is greater" <|
+                \() ->
+                    let
+                        currentModel =
+                            { initialModel
+                                | counts = [ 1, 1, 1 ]
+                                , numberOfCounters = 3
+                            }
+
+                        updatedModel =
+                            update_ (CountersSliderChange "4") currentModel
+                    in
+                        updatedModel
+                            |> To.equal
+                                { initialModel
+                                    | counts = [ 1, 1, 1, 0 ]
+                                    , numberOfCounters = 4
+                                }
+            ]
           --
         , test "Reset" <|
             \() ->
@@ -114,27 +173,6 @@ all =
                         { initialModel | people = people }
                 in
                     updatedModel |> To.equal expectedModel
-          --
-        , describe "Decrement"
-            [ test "by 1" <|
-                \() ->
-                    let
-                        currentModel =
-                            { initialModel | counts = [ 1, 0, 0 ] }
-
-                        updatedModel =
-                            update_ (CountersMsg 0 Counter.Decrement) currentModel
-                    in
-                        updatedModel |> To.equal initialModel
-              --
-            , test "does not decerement past 0" <|
-                \() ->
-                    let
-                        updatedModel =
-                            update_ (CountersMsg 0 Counter.Decrement) initialModel
-                    in
-                        updatedModel |> To.equal initialModel
-            ]
           --
         , test "TextChange" <|
             \() ->
@@ -214,10 +252,10 @@ all =
             \() ->
                 let
                     expectedJSONString =
-                        "{\"counts\":[0,0,0],\"reverseText\":\"\",\"showText\":true}"
+                        "{\"counts\":[0,0,0],\"numberOfCounters\":0,\"reverseText\":\"\",\"showText\":true}"
 
                     actualJSONString =
-                        encodeModel initialModel
+                        encodeModel <| { initialModel | counts = [ 0, 0, 0 ] }
                 in
                     actualJSONString |> To.equal expectedJSONString
           --
@@ -225,7 +263,7 @@ all =
             \() ->
                 let
                     appStateJSONString =
-                        "{\"counts\":[0,0,0],\"reverseText\":\"\",\"showText\":true}"
+                        "{\"counts\":[0,0,0],\"numberOfCounters\":3,\"reverseText\":\"\",\"showText\":true}"
 
                     appStateResult =
                         Json.Decode.decodeString
@@ -237,6 +275,7 @@ all =
                             appState
                                 |> To.equal
                                     { counts = [ 0, 0, 0 ]
+                                    , numberOfCounters = 3
                                     , reverseText = ""
                                     , showText = True
                                     }
@@ -249,7 +288,7 @@ all =
                 \() ->
                     let
                         appStateJSONString =
-                            "{\"counts\":[1,1,1],\"reverseText\":\"namtab\",\"showText\":false}"
+                            "{\"counts\":[1,1,1],\"numberOfCounters\":3,\"reverseText\":\"namtab\",\"showText\":false}"
 
                         updatedModel =
                             update_
@@ -260,6 +299,7 @@ all =
                             |> To.equal
                                 { initialModel
                                     | counts = [ 1, 1, 1 ]
+                                    , numberOfCounters = 3
                                     , reverseText = "namtab"
                                     , showText = False
                                     , people = []

@@ -2,7 +2,7 @@ port module App exposing (..)
 
 import Html exposing (Attribute, Html, button, div, input, label, li, p, span, text, ul)
 import UrlParser exposing (Parser, (</>), s, int, string, map, oneOf, parseHash, top, parsePath)
-import Html.Attributes exposing (checked, style, type_, value)
+import Html.Attributes exposing (checked, style, type_, value, min, max)
 import Html.Events exposing (onCheck, onClick, onInput)
 import Http exposing (Error, get)
 import Json.Decode exposing (Decoder, at, bool, int, list, string)
@@ -18,6 +18,7 @@ import Counter exposing (..)
 
 type alias Model =
     { counts : List Int
+    , numberOfCounters : Int
     , reverseText : String
     , text : String
     , showText : Bool
@@ -29,7 +30,8 @@ type alias Model =
 
 initialModel : Model
 initialModel =
-    { counts = [ 0, 0, 0 ]
+    { counts = []
+    , numberOfCounters = 0
     , reverseText = ""
     , text = ""
     , showText = True
@@ -41,6 +43,7 @@ initialModel =
 
 type alias AppState =
     { counts : List Int
+    , numberOfCounters : Int
     , reverseText : String
     , showText : Bool
     }
@@ -67,6 +70,7 @@ modelToObject model =
           , Json.Encode.list <|
                 (List.map (\count -> Json.Encode.int count) model.counts)
           )
+        , ( "numberOfCounters", Json.Encode.int model.numberOfCounters )
         , ( "reverseText", Json.Encode.string model.reverseText )
         , ( "showText", Json.Encode.bool model.showText )
         ]
@@ -85,6 +89,7 @@ appStateDecoder : Decoder AppState
 appStateDecoder =
     decode AppState
         |> required "counts" (Json.Decode.list Json.Decode.int)
+        |> required "numberOfCounters" Json.Decode.int
         |> required "reverseText" Json.Decode.string
         |> required "showText" Json.Decode.bool
 
@@ -145,6 +150,7 @@ init flags location =
         Just appState ->
             { initialModel
                 | counts = appState.counts
+                , numberOfCounters = appState.numberOfCounters
                 , reverseText = appState.reverseText
                 , showText = appState.showText
                 , currentRoute =
@@ -163,6 +169,7 @@ init flags location =
 
 type Msg
     = CountersMsg Int Counter.Msg
+    | CountersSliderChange String
     | TextChange String
     | ToggleCheckBox Bool
     | GetPeople (Result Http.Error People)
@@ -189,11 +196,29 @@ update msg model =
         Reset ->
             { model
                 | reverseText = initialModel.reverseText
-                , counts = [ 0, 0, 0 ]
+                , counts = []
+                , numberOfCounters = 0
                 , showText = initialModel.showText
                 , text = initialModel.text
             }
                 |> storeInLocalStorage
+
+        CountersSliderChange value ->
+            let
+                newNumberOfCounters =
+                    String.toInt value |> Result.withDefault 0
+
+                newCounts =
+                    if List.length model.counts < newNumberOfCounters then
+                        model.counts ++ (List.repeat (newNumberOfCounters - List.length model.counts) 0)
+                    else
+                        List.take newNumberOfCounters model.counts
+            in
+                { model
+                    | numberOfCounters = newNumberOfCounters
+                    , counts = newCounts
+                }
+                    |> storeInLocalStorage
 
         CountersMsg counterId subMsg ->
             let
@@ -254,6 +279,7 @@ update msg model =
                         { model
                             | reverseText = appState.reverseText
                             , counts = appState.counts
+                            , numberOfCounters = appState.numberOfCounters
                             , showText = appState.showText
                         }
                             ! []
@@ -320,13 +346,22 @@ homeView model =
 countersView : Model -> Html Msg
 countersView model =
     let
-        countsWithIndex =
-            List.indexedMap (,) model.counts
-
         counters =
-            List.map (\( index, count ) -> Counter.view count <| CountersMsg index) countsWithIndex
+            List.map (\( index, count ) -> Counter.view count <| CountersMsg index) <|
+                List.indexedMap (,) model.counts
     in
-        div [] counters
+        div []
+            [ p [] [ text "Counters Controller" ]
+            , input
+                [ type_ "range"
+                , Html.Attributes.min "0"
+                , Html.Attributes.max "5"
+                , value <| toString model.numberOfCounters
+                , onInput CountersSliderChange
+                ]
+                []
+            , div [] counters
+            ]
 
 
 reverseTextInputView : Model -> Html Msg
