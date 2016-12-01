@@ -5,6 +5,7 @@
 - Saving to LocalStorage
 - Using Ports
 - Unit Testing
+- Componentization (NOTE: should be put off as late as possible, favor extracting functions)
 - Using Flags to initialize Elm App (apiEndpoint, loading initial data from localStorage)
 
 ## Prerequisites
