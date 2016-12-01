@@ -230,8 +230,8 @@ update msg model =
 
                 count =
                     case counts of
-                        [ countWithIndex ] ->
-                            Tuple.second countWithIndex
+                        [ ( _, count ) ] ->
+                            count
 
                         _ ->
                             0

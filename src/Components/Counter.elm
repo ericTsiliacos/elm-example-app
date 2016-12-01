@@ -1,8 +1,7 @@
 module Counter exposing (..)
 
-import Html exposing (Html, button, div, p, text)
+import Html exposing (Html, button, div, p, text, map)
 import Html.Events exposing (onClick)
-import Html exposing (map)
 
 
 type alias Model =
