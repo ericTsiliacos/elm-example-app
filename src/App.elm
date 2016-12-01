@@ -17,9 +17,7 @@ import Counter exposing (..)
 
 
 type alias Model =
-    { count : Int
-    , count1 : Int
-    , count2 : Int
+    { counts : List Int
     , reverseText : String
     , text : String
     , showText : Bool
@@ -31,9 +29,7 @@ type alias Model =
 
 initialModel : Model
 initialModel =
-    { count = 0
-    , count1 = 0
-    , count2 = 0
+    { counts = [ 0, 0, 0 ]
     , reverseText = ""
     , text = ""
     , showText = True
@@ -44,9 +40,7 @@ initialModel =
 
 
 type alias AppState =
-    { count : Int
-    , count1 : Int
-    , count2 : Int
+    { counts : List Int
     , reverseText : String
     , showText : Bool
     }
@@ -69,9 +63,10 @@ type alias Person =
 modelToObject : Model -> Value
 modelToObject model =
     object
-        [ ( "count", Json.Encode.int model.count )
-        , ( "count1", Json.Encode.int model.count1 )
-        , ( "count2", Json.Encode.int model.count1 )
+        [ ( "counts"
+          , Json.Encode.list <|
+                (List.map (\count -> Json.Encode.int count) model.counts)
+          )
         , ( "reverseText", Json.Encode.string model.reverseText )
         , ( "showText", Json.Encode.bool model.showText )
         ]
@@ -89,9 +84,7 @@ encodeModel model =
 appStateDecoder : Decoder AppState
 appStateDecoder =
     decode AppState
-        |> required "count" Json.Decode.int
-        |> required "count1" Json.Decode.int
-        |> required "count2" Json.Decode.int
+        |> required "counts" (Json.Decode.list Json.Decode.int)
         |> required "reverseText" Json.Decode.string
         |> required "showText" Json.Decode.bool
 
@@ -151,9 +144,7 @@ init flags location =
     case flags.appState of
         Just appState ->
             { initialModel
-                | count = appState.count
-                , count1 = appState.count1
-                , count2 = appState.count2
+                | counts = appState.counts
                 , reverseText = appState.reverseText
                 , showText = appState.showText
                 , currentRoute =
@@ -171,9 +162,7 @@ init flags location =
 
 
 type Msg
-    = CounterMsg Counter.Msg
-    | CounterMsg1 Counter.Msg
-    | CounterMsg2 Counter.Msg
+    = CountersMsg Int Counter.Msg
     | TextChange String
     | ToggleCheckBox Bool
     | GetPeople (Result Http.Error People)
@@ -200,36 +189,42 @@ update msg model =
         Reset ->
             { model
                 | reverseText = initialModel.reverseText
-                , count = 0
-                , count1 = 0
-                , count2 = 0
+                , counts = [ 0, 0, 0 ]
                 , showText = initialModel.showText
                 , text = initialModel.text
             }
                 |> storeInLocalStorage
 
-        CounterMsg subMsg ->
+        CountersMsg counterId subMsg ->
             let
-                newCounterState =
-                    Counter.update subMsg model.count
-            in
-                { model | count = newCounterState }
-                    |> storeInLocalStorage
+                countsWithIndex =
+                    List.indexedMap (,) model.counts
 
-        CounterMsg1 subMsg ->
-            let
-                newCounterState =
-                    Counter.update subMsg model.count1
-            in
-                { model | count1 = newCounterState }
-                    |> storeInLocalStorage
+                counts =
+                    List.filter (\( index, _ ) -> index == counterId) countsWithIndex
 
-        CounterMsg2 subMsg ->
-            let
+                count =
+                    case counts of
+                        [ countWithIndex ] ->
+                            Tuple.second countWithIndex
+
+                        _ ->
+                            0
+
                 newCounterState =
-                    Counter.update subMsg model.count2
+                    Counter.update subMsg count
+
+                newCounts =
+                    List.map
+                        (\( index, count ) ->
+                            if index == counterId then
+                                newCounterState
+                            else
+                                count
+                        )
+                        countsWithIndex
             in
-                { model | count2 = newCounterState }
+                { model | counts = newCounts }
                     |> storeInLocalStorage
 
         TextChange value ->
@@ -258,9 +253,7 @@ update msg model =
                     Ok appState ->
                         { model
                             | reverseText = appState.reverseText
-                            , count = appState.count
-                            , count1 = appState.count1
-                            , count2 = appState.count2
+                            , counts = appState.counts
                             , showText = appState.showText
                         }
                             ! []
@@ -326,11 +319,14 @@ homeView model =
 
 countersView : Model -> Html Msg
 countersView model =
-    div []
-        [ Counter.view model.count CounterMsg
-        , Counter.view model.count1 CounterMsg1
-        , Counter.view model.count2 CounterMsg2
-        ]
+    let
+        countsWithIndex =
+            List.indexedMap (,) model.counts
+
+        counters =
+            List.map (\( index, count ) -> Counter.view count <| CountersMsg index) countsWithIndex
+    in
+        div [] counters
 
 
 reverseTextInputView : Model -> Html Msg

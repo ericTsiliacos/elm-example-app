@@ -43,27 +43,23 @@ locationBuilder =
 all : Test
 all =
     describe "App"
-        [ test "initial count is set to 0" <|
+        [ test "initial counts are set to 0" <|
             \() ->
-                initialModel.count |> To.equal 0
+                initialModel.counts |> To.equal [ 0, 0, 0 ]
           --
         , describe "init"
             [ test "loads the initial appState when it exists" <|
                 \() ->
                     let
                         appState =
-                            { count = 10
-                            , count1 = 10
-                            , count2 = 10
+                            { counts = [ 10 ]
                             , reverseText = "s"
                             , showText = True
                             }
 
                         expectedModel =
                             { initialModel
-                                | count = 10
-                                , count1 = 10
-                                , count2 = 10
+                                | counts = [ 10 ]
                                 , reverseText = "s"
                                 , showText = True
                             }
@@ -92,9 +88,9 @@ all =
             \() ->
                 let
                     updatedModel =
-                        update_ (CounterMsg Counter.Increment) initialModel
+                        update_ (CountersMsg 0 Counter.Increment) initialModel
                 in
-                    updatedModel.count |> To.equal 1
+                    updatedModel.counts |> To.equal [ 1, 0, 0 ]
           --
         , test "Reset" <|
             \() ->
@@ -107,7 +103,7 @@ all =
                             | reverseText = "boo"
                             , showText = False
                             , text = "oob"
-                            , count = 1
+                            , counts = [ 1 ]
                             , people = people
                         }
 
@@ -124,10 +120,10 @@ all =
                 \() ->
                     let
                         currentModel =
-                            { initialModel | count = 1 }
+                            { initialModel | counts = [ 1, 0, 0 ] }
 
                         updatedModel =
-                            update_ (CounterMsg Counter.Decrement) currentModel
+                            update_ (CountersMsg 0 Counter.Decrement) currentModel
                     in
                         updatedModel |> To.equal initialModel
               --
@@ -135,7 +131,7 @@ all =
                 \() ->
                     let
                         updatedModel =
-                            update_ (CounterMsg Counter.Decrement) initialModel
+                            update_ (CountersMsg 0 Counter.Decrement) initialModel
                     in
                         updatedModel |> To.equal initialModel
             ]
@@ -214,11 +210,11 @@ all =
                 in
                     people |> To.equal [ { id = 1, name = "batman" } ]
           --
-        , test "encoding a model to save to localstorage (excluding people)" <|
+        , test "encoding a model to save to localstorage" <|
             \() ->
                 let
                     expectedJSONString =
-                        "{\"count\":0,\"count1\":0,\"count2\":0,\"reverseText\":\"\",\"showText\":true}"
+                        "{\"counts\":[0,0,0],\"reverseText\":\"\",\"showText\":true}"
 
                     actualJSONString =
                         encodeModel initialModel
@@ -229,7 +225,7 @@ all =
             \() ->
                 let
                     appStateJSONString =
-                        "{\"count\":0,\"count1\":0,\"count2\":0,\"reverseText\":\"\",\"showText\":true}"
+                        "{\"counts\":[0,0,0],\"reverseText\":\"\",\"showText\":true}"
 
                     appStateResult =
                         Json.Decode.decodeString
@@ -240,9 +236,7 @@ all =
                         Ok appState ->
                             appState
                                 |> To.equal
-                                    { count = 0
-                                    , count1 = 0
-                                    , count2 = 0
+                                    { counts = [ 0, 0, 0 ]
                                     , reverseText = ""
                                     , showText = True
                                     }
@@ -255,7 +249,7 @@ all =
                 \() ->
                     let
                         appStateJSONString =
-                            "{\"count\":1,\"count1\":1,\"count2\":1,\"reverseText\":\"namtab\",\"showText\":false}"
+                            "{\"counts\":[1,1,1],\"reverseText\":\"namtab\",\"showText\":false}"
 
                         updatedModel =
                             update_
@@ -265,9 +259,7 @@ all =
                         updatedModel
                             |> To.equal
                                 { initialModel
-                                    | count = 1
-                                    , count1 = 1
-                                    , count2 = 1
+                                    | counts = [ 1, 1, 1 ]
                                     , reverseText = "namtab"
                                     , showText = False
                                     , people = []
