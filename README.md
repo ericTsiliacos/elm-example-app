@@ -42,7 +42,6 @@ rspec
 
 - POST request example
 - Websocket example
-- Extract and reuse/nest another elm widget
 - Embed Elm: integrate elm with another javascript famework/library like React/Redux
 
 ## Setting up a new project
