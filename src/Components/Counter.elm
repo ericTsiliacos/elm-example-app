@@ -28,13 +28,12 @@ update msg model =
                     model - 1
 
 
-view : Model -> (Msg -> msg) -> Html msg
-view model upgrade =
-    map upgrade <|
-        div []
-            [ p [] [ text ("Count: " ++ toString model) ]
-            , button [ onClick Increment ]
-                [ text "+" ]
-            , button [ onClick Decrement ]
-                [ text "-" ]
-            ]
+view : Model -> Html Msg
+view model =
+    div []
+        [ p [] [ text ("Count: " ++ toString model) ]
+        , button [ onClick Increment ]
+            [ text "+" ]
+        , button [ onClick Decrement ]
+            [ text "-" ]
+        ]

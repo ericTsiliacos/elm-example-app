@@ -1,6 +1,6 @@
 port module App exposing (..)
 
-import Html exposing (Attribute, Html, button, div, input, label, li, p, span, text, ul)
+import Html exposing (Attribute, Html, button, div, input, label, li, p, span, text, ul, map)
 import UrlParser exposing (Parser, (</>), s, int, string, map, oneOf, parseHash, top, parsePath)
 import Html.Attributes exposing (checked, style, type_, value, min, max)
 import Html.Events exposing (onCheck, onClick, onInput)
@@ -128,9 +128,9 @@ type Route
 route : Parser (Route -> a) a
 route =
     oneOf
-        [ map Home (s "index.html")
-        , map First (s "first")
-        , map Second (s "second")
+        [ UrlParser.map Home (s "index.html")
+        , UrlParser.map First (s "first")
+        , UrlParser.map Second (s "second")
         ]
 
 
@@ -347,7 +347,7 @@ countersView : Model -> Html Msg
 countersView model =
     let
         counters =
-            List.map (\( index, count ) -> Counter.view count <| CountersMsg index) <|
+            List.map (\( index, count ) -> Html.map (CountersMsg index) (Counter.view count)) <|
                 List.indexedMap (,) model.counts
     in
         div []
