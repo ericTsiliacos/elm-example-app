@@ -10,6 +10,7 @@ import Expect as To exposing (fail)
 import String
 import Navigation
 import Counter
+import CounterTests
 
 
 -- Test Helpers
@@ -349,4 +350,5 @@ all =
                         update_ (UrlChange location) initialModel
                             |> To.equal { initialModel | currentRoute = Second }
             ]
+        , CounterTests.all
         ]
