@@ -1,4 +1,4 @@
-module Tests exposing (..)
+module AppTests exposing (..)
 
 import App exposing (..)
 import Http exposing (Error(Timeout))
@@ -11,6 +11,8 @@ import String
 import Navigation
 import Counter
 import CounterTests
+import RemoteData exposing (..)
+
 
 
 -- Test Helpers
@@ -18,7 +20,7 @@ import CounterTests
 
 update_ : Msg -> App.Model -> App.Model
 update_ msg model =
-    Tuple.first <| update msg model
+    Tuple.first <| App.update msg model
 
 
 locationBuilder : Navigation.Location
@@ -41,8 +43,8 @@ locationBuilder =
 -- Tests
 
 
-all : Test
-all =
+suite : Test
+suite =
     describe "App"
         [ describe "init"
             [ test "loads the initial appState when it exists" <|
@@ -71,7 +73,8 @@ all =
                             location
                             |> Tuple.first
                             |> To.equal expectedModel
-              --
+
+            --
             , test "returns the defaultModel when there is no initial appState" <|
                 \() ->
                     let
@@ -82,7 +85,8 @@ all =
                             |> Tuple.first
                             |> To.equal initialModel
             ]
-          --
+
+        --
         , test "Increment" <|
             \() ->
                 let
@@ -90,7 +94,8 @@ all =
                         update_ (CountersMsg 0 Counter.Increment) { initialModel | counts = [ 0, 0, 0 ] }
                 in
                     updatedModel.counts |> To.equal [ 1, 0, 0 ]
-          --
+
+        --
         , describe "Decrement"
             [ test "by 1" <|
                 \() ->
@@ -102,7 +107,8 @@ all =
                             update_ (CountersMsg 0 Counter.Decrement) currentModel
                     in
                         updatedModel |> To.equal { initialModel | counts = [ 0, 0, 0 ] }
-              --
+
+            --
             , test "does not decerement past 0" <|
                 \() ->
                     let
@@ -111,7 +117,8 @@ all =
                     in
                         updatedModel |> To.equal initialModel
             ]
-          --
+
+        --
         , describe "CountersSliderChange"
             [ test "removes counters when the change is less than the current number of counters" <|
                 \() ->
@@ -131,7 +138,8 @@ all =
                                     | counts = [ 1, 1 ]
                                     , numberOfCounters = 2
                                 }
-              --
+
+            --
             , test "creates counters that are initialized to 0 when the current number of counters is greater" <|
                 \() ->
                     let
@@ -151,12 +159,13 @@ all =
                                     , numberOfCounters = 4
                                 }
             ]
-          --
+
+        --
         , test "Reset" <|
             \() ->
                 let
                     people =
-                        [ { id = 1, name = "batman" } ]
+                        Success [ { id = 1, name = "batman" } ]
 
                     currentModel =
                         { initialModel
@@ -174,7 +183,8 @@ all =
                         { initialModel | people = people }
                 in
                     updatedModel |> To.equal expectedModel
-          --
+
+        --
         , test "TextChange" <|
             \() ->
                 let
@@ -187,7 +197,8 @@ all =
                                 | reverseText = "namtab"
                                 , text = "batman"
                             }
-          --
+
+        --
         , describe "ToggleCheckBox"
             [ test "when checked it sets showText to true" <|
                 \() ->
@@ -196,7 +207,8 @@ all =
                             update_ (ToggleCheckBox True) initialModel
                     in
                         updatedModel.showText |> To.equal True
-              --
+
+            --
             , test "when unchecked it sets showText to false" <|
                 \() ->
                     let
@@ -205,31 +217,24 @@ all =
                     in
                         updatedModel.showText |> To.equal False
             ]
-          --
+
+        --
         , describe "getting people"
             [ test "when fetching people succeeds, store people on the model" <|
                 \() ->
                     let
-                        people =
-                            [ { id = 1, name = "batman" } ]
+                        initialPeople =
+                            Success [ { id = 1, name = "batman" } ]
 
-                        updatedModel =
-                            update_ (GetPeople (Ok people)) initialModel
+                        { people } =
+                            update_ (PeopleResponse initialPeople) initialModel
                     in
-                        updatedModel.people
+                        people
                             |> To.equal
-                                [ { id = 1, name = "batman" } ]
-              --
-            , test "when fetching people fails, it returns the current model" <|
-                \() ->
-                    let
-                        updatedModel =
-                            update_ (GetPeople (Err Timeout)) initialModel
-                    in
-                        updatedModel.getPeopleErrorMsg
-                            |> To.equal "Timeout"
+                                (Success ([ { id = 1, name = "batman" } ]))
             ]
-          --
+
+        --
         , test "decoding people" <|
             \() ->
                 let
@@ -248,7 +253,8 @@ all =
                                 []
                 in
                     people |> To.equal [ { id = 1, name = "batman" } ]
-          --
+
+        --
         , test "encoding a model to save to localstorage" <|
             \() ->
                 let
@@ -259,7 +265,8 @@ all =
                         encodeModel <| { initialModel | counts = [ 0, 0, 0 ] }
                 in
                     actualJSONString |> To.equal expectedJSONString
-          --
+
+        --
         , test "decoding the appState" <|
             \() ->
                 let
@@ -283,7 +290,8 @@ all =
 
                         Err withErr ->
                             To.fail withErr
-          --
+
+        --
         , describe "LoadLocalStorageAppState"
             [ test "updates the model with the saved appState with decodable appState" <|
                 \() ->
@@ -303,9 +311,10 @@ all =
                                     , numberOfCounters = 3
                                     , reverseText = "namtab"
                                     , showText = False
-                                    , people = []
+                                    , people = Loading
                                 }
-              --
+
+            --
             , test "when the data is un-decodable, it returns the same model" <|
                 \() ->
                     let
@@ -321,7 +330,8 @@ all =
                             |> To.equal
                                 initialModel
             ]
-          --
+
+        --
         , describe "UrlChange"
             [ test "/" <|
                 \() ->
@@ -331,7 +341,8 @@ all =
                     in
                         update_ (UrlChange location) initialModel
                             |> To.equal { initialModel | currentRoute = Home }
-              --
+
+            --
             , test "/first" <|
                 \() ->
                     let
@@ -340,7 +351,8 @@ all =
                     in
                         update_ (UrlChange location) initialModel
                             |> To.equal { initialModel | currentRoute = First }
-              --
+
+            --
             , test "/second" <|
                 \() ->
                     let
@@ -350,5 +362,4 @@ all =
                         update_ (UrlChange location) initialModel
                             |> To.equal { initialModel | currentRoute = Second }
             ]
-        , CounterTests.all
         ]

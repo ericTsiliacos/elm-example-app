@@ -11,6 +11,7 @@ import Json.Encode exposing (Value, encode, object)
 import String exposing (reverse)
 import Navigation
 import Counter exposing (..)
+import RemoteData exposing (..)
 
 
 -- Model
@@ -22,8 +23,7 @@ type alias Model =
     , reverseText : String
     , text : String
     , showText : Bool
-    , people : People
-    , getPeopleErrorMsg : String
+    , people : WebData People
     , currentRoute : Route
     }
 
@@ -35,8 +35,7 @@ initialModel =
     , reverseText = ""
     , text = ""
     , showText = True
-    , people = []
-    , getPeopleErrorMsg = ""
+    , people = Loading
     , currentRoute = Home
     }
 
@@ -112,7 +111,10 @@ personDecoder =
 
 getPeople : String -> Cmd Msg
 getPeople apiEndpoint =
-    Http.send GetPeople <| get apiEndpoint peopleDecoder
+    peopleDecoder
+        |> get apiEndpoint
+        |> RemoteData.sendRequest
+        |> Cmd.map PeopleResponse
 
 
 
@@ -172,7 +174,7 @@ type Msg
     | CountersSliderChange String
     | TextChange String
     | ToggleCheckBox Bool
-    | GetPeople (Result Http.Error People)
+    | PeopleResponse (WebData People)
     | LoadLocalStorageAppState String
     | UrlChange Navigation.Location
     | NewUrl String
@@ -263,11 +265,8 @@ update msg model =
             { model | showText = checked }
                 |> storeInLocalStorage
 
-        GetPeople (Ok people) ->
-            { model | people = people } ! []
-
-        GetPeople (Err err) ->
-            { model | getPeopleErrorMsg = toString err } ! []
+        PeopleResponse response ->
+            { model | people = response } ! []
 
         LoadLocalStorageAppState appStateJSONString ->
             let
@@ -393,10 +392,21 @@ reverseTextInputView model =
 
 showPeopleView : Model -> Html Msg
 showPeopleView model =
-    div []
-        [ p [] [ text <| "GET /people: " ++ (model.getPeopleErrorMsg) ]
-        , ul [] (List.map (\person -> li [] [ text person.name ]) model.people)
-        ]
+    case model.people of
+        NotAsked ->
+            text "Initialising."
+
+        Loading ->
+            text "Loading..."
+
+        Failure err ->
+            text ("Error: " ++ toString err)
+
+        Success people ->
+            div []
+                [ p [] [ text <| "GET /people: " ]
+                , ul [] (List.map (\person -> li [] [ text person.name ]) people)
+                ]
 
 
 firstView : Model -> Html Msg

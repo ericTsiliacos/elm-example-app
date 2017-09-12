@@ -3,7 +3,7 @@
   "dependencies": {},
   "devDependencies": {
     "elm-server": "^1.0.0",
-    "elm-test": "^0.17.3",
+    "elm-test": "^0.18.9",
     "json-server": "^0.8.23"
   },
   "scripts": {
