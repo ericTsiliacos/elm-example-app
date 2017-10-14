@@ -189,6 +189,15 @@ port saveStateToLocalStorage : String -> Cmd msg
 
 
 
+-- Subscriptions
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
+
+
+
 -- Update
 
 

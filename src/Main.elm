@@ -1,6 +1,15 @@
 module Main exposing (..)
 
-import App exposing (init, update, view, AppState, Flags, Msg(UrlChange))
+import App
+    exposing
+        ( init
+        , update
+        , view
+        , subscriptions
+        , AppState
+        , Flags
+        , Msg(UrlChange)
+        )
 import Navigation exposing (programWithFlags)
 
 
@@ -9,6 +18,6 @@ main =
     programWithFlags UrlChange
         { init = init
         , update = update
-        , subscriptions = always Sub.none
+        , subscriptions = subscriptions
         , view = view
         }
